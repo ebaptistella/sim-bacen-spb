@@ -1,0 +1,29 @@
+services:
+  ibmmq:
+    image: icr.io/ibm-messaging/mq:latest
+    platform: linux/amd64
+    container_name: ibmmq
+    restart: unless-stopped
+    environment:
+      LICENSE: accept
+      MQ_QMGR_NAME: QM1
+      MQ_APP_PASSWORD: app@mq123
+      MQ_ADMIN_PASSWORD: admin@mq123
+    ports:
+      - "1414:1414"   # MQ listener port
+      - "9443:9443"   # Web admin console
+    volumes:
+      - ibmmq-data:/mnt/mqm
+      # Basic MQSC script applied on QM1 startup (minimal SPB queues)
+      - ./ibmmq/20-spb-queues.mqsc:/etc/mqm/20-spb-queues.mqsc
+    networks:
+      - spb-net
+
+networks:
+  spb-net:
+    driver: bridge
+
+volumes:
+  ibmmq-data:
+    driver: local
+
