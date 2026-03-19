@@ -4,6 +4,8 @@ ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 .PHONY: help up down ibmmq-up ibmmq-down ibmmq-logs ibmmq-status ibmmq-gen-queues
 
+COMPOSE_ENV := --env-file ../.env
+
 help:
 	@echo "Available targets:"
 	@echo "  up                 - Generate MQSC file and start IBM MQ"
@@ -15,16 +17,16 @@ help:
 	@echo "  ibmmq-gen-queues   - Generate dev/ibmmq/20-spb-queues.mqsc from .env"
 
 ibmmq-up:
-	cd dev && docker compose up -d
+	cd dev && docker compose $(COMPOSE_ENV) up -d
 
 ibmmq-down:
-	cd dev && docker compose down
+	cd dev && docker compose $(COMPOSE_ENV) down
 
 ibmmq-logs:
-	cd dev && docker compose logs -f ibmmq
+	cd dev && docker compose $(COMPOSE_ENV) logs -f ibmmq
 
 ibmmq-status:
-	cd dev && docker compose ps
+	cd dev && docker compose $(COMPOSE_ENV) ps
 
 ibmmq-gen-queues:
 	cd dev/ibmmq && bash gen-setup-spb-queues.sh
