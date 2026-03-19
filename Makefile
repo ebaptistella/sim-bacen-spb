@@ -2,39 +2,61 @@ SHELL := /bin/bash
 
 ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-.PHONY: help up down ibmmq-up ibmmq-down ibmmq-logs ibmmq-status ibmmq-gen-queues
+.PHONY: help up down build logs \
+        backend-logs frontend-logs ibmmq-logs \
+        ibmmq-status ibmmq-gen-queues
 
-COMPOSE_ENV := --env-file ../.env
+COMPOSE := docker compose -f infra/docker-compose.yml --env-file .env
 
 help:
 	@echo "Available targets:"
-	@echo "  up                 - Generate MQSC file and start IBM MQ"
-	@echo "  down               - Stop IBM MQ docker-compose stack"
-	@echo "  ibmmq-up           - Start IBM MQ docker-compose stack"
-	@echo "  ibmmq-down         - Stop IBM MQ docker-compose stack"
-	@echo "  ibmmq-logs         - Tail IBM MQ container logs"
-	@echo "  ibmmq-status       - Show IBM MQ container status"
-	@echo "  ibmmq-gen-queues   - Generate dev/ibmmq/20-spb-queues.mqsc from .env"
+	@echo "  up                 - Generate MQSC file and start full stack"
+	@echo "  down               - Stop full stack"
+	@echo "  build              - Build backend and frontend images"
+	@echo "  logs               - Tail all service logs"
+	@echo "  backend-logs       - Tail backend logs"
+	@echo "  frontend-logs      - Tail frontend logs"
+	@echo "  ibmmq-logs         - Tail IBM MQ logs"
+	@echo "  ibmmq-status       - Show all container status"
+	@echo "  ibmmq-gen-queues   - Generate infra/ibmmq/20-spb-queues.mqsc from .env"
 
-ibmmq-up:
-	cd dev && docker compose $(COMPOSE_ENV) up -d
+# ---------------------------------------------------------------------------
+# Build
+# ---------------------------------------------------------------------------
+build:
+	$(COMPOSE) build backend frontend
 
-ibmmq-down:
-	cd dev && docker compose $(COMPOSE_ENV) down
+# ---------------------------------------------------------------------------
+# Full stack
+# ---------------------------------------------------------------------------
+up: ibmmq-gen-queues
+	$(COMPOSE) up -d
+	@echo "Stack up: ibmmq, backend (:3000), frontend (:8080)"
+
+down:
+	$(COMPOSE) down
+	@echo "Stack stopped."
+
+# ---------------------------------------------------------------------------
+# Logs
+# ---------------------------------------------------------------------------
+logs:
+	$(COMPOSE) logs -f
+
+backend-logs:
+	$(COMPOSE) logs -f backend
+
+frontend-logs:
+	$(COMPOSE) logs -f frontend
 
 ibmmq-logs:
-	cd dev && docker compose $(COMPOSE_ENV) logs -f ibmmq
+	$(COMPOSE) logs -f ibmmq
+
+# ---------------------------------------------------------------------------
+# IBM MQ
+# ---------------------------------------------------------------------------
+ibmmq-gen-queues:
+	cd infra/ibmmq && bash gen-setup-spb-queues.sh
 
 ibmmq-status:
-	cd dev && docker compose $(COMPOSE_ENV) ps
-
-ibmmq-gen-queues:
-	cd dev/ibmmq && bash gen-setup-spb-queues.sh
-
-# Full flow: generate MQSC (20-spb-queues.mqsc) -> start MQ (it applies MQSC on startup)
-up: ibmmq-gen-queues ibmmq-up
-	@echo "Environment is up with IBM MQ and MQSC (20-spb-queues.mqsc) applied on startup."
-
-down: ibmmq-down
-	@echo "IBM MQ docker-compose stack stopped."
-
+	$(COMPOSE) ps

@@ -25,11 +25,6 @@ COPY . .
 RUN cat > resources/config/application.edn << 'APPCONF'
 {:application-name "sim-bacen-spb"
  :config-file "resources/config/application.edn"
- :database {:host "postgres"
-            :port 5432
-            :name "sim_bacen_spb"
-            :user "postgres"
-            :password "postgres"}
  :http {:port 3000
         :host "0.0.0.0"}
  :mq {:host "ibmmq"
