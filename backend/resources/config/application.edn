@@ -1,0 +1,12 @@
+{:application-name "sim-bacen-spb"
+ :http {:port 3000
+        :host "0.0.0.0"}
+ :mq {:host    "localhost"
+      :port    1414
+      :channel "DEV.APP.SVRCONN"
+      :qmgr    "QM1"
+      :user    "app"
+      :password "app@mq123"}
+ :mq-worker {:poll-interval-ms 2000
+             :thread-pool-size 4
+             :batch-limit      10}}

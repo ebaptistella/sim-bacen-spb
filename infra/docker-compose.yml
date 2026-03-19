@@ -1,0 +1,102 @@
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — banco de dados relacional
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sim_bacen_spb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - spb-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sim_bacen_spb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # IBM MQ — broker de mensagens SPB
+  # ---------------------------------------------------------------------------
+  ibmmq:
+    image: icr.io/ibm-messaging/mq:latest
+    platform: linux/amd64
+    container_name: ibmmq
+    restart: unless-stopped
+    environment:
+      LICENSE: accept
+      MQ_QMGR_NAME: ${IBMMQ_QMGR_NAME}
+      MQ_APP_PASSWORD: ${IBMMQ_APP_PASSWORD}
+      MQ_ADMIN_PASSWORD: ${IBMMQ_ADMIN_PASSWORD}
+    ports:
+      - "1414:1414"   # MQ listener
+      - "9443:9443"   # Web admin console
+    volumes:
+      - ibmmq-data:/mnt/mqm
+      - ./ibmmq/20-spb-queues.mqsc:/etc/mqm/20-spb-queues.mqsc
+    networks:
+      - spb-net
+
+  # ---------------------------------------------------------------------------
+  # Backend — API Clojure/Pedestal
+  # Porta 3000 exposta no host para debug; em produção pode ser removida.
+  # Variáveis de ambiente sobrescrevem a config IBM MQ do application.edn.
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infra/Dockerfile.backend
+    container_name: backend
+    restart: unless-stopped
+    environment:
+      IBMMQ_HOST: ibmmq
+      IBMMQ_PORT: "1414"
+      IBMMQ_CHANNEL: ${IBMMQ_CHANNEL:-DEV.APP.SVRCONN}
+      IBMMQ_QMGR_NAME: ${IBMMQ_QMGR_NAME:-QM1}
+      IBMMQ_USER: ${IBMMQ_USER:-app}
+      IBMMQ_PASSWORD: ${IBMMQ_PASSWORD:-app@mq123}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ibmmq:
+        condition: service_started
+    networks:
+      - spb-net
+
+  # ---------------------------------------------------------------------------
+  # Frontend — SPA ClojureScript/Reagent servida via nginx
+  # Nginx também proxia /api/ para o backend (mesmo origin, sem CORS).
+  # Porta host: 8080
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../infra/Dockerfile.frontend
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - spb-net
+
+networks:
+  spb-net:
+    driver: bridge
+
+volumes:
+  ibmmq-data:
+    driver: local
+  postgres-data:
+    driver: local

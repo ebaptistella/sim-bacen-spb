@@ -1,0 +1,71 @@
+(ns com.github.ebaptistella.repl
+  "REPL utilities with auto-start functionality."
+  (:require [com.github.ebaptistella.components.logger :as logger]
+            [com.github.ebaptistella.system :as system]
+            [com.stuartsierra.component :as component]
+            [schema.core :as s]))
+
+(defonce system (atom nil))
+
+(s/defn start!
+  "Start the system. Useful for REPL development."
+  []
+  (if @system
+    (do
+      (println "[System] System already started. Call stop! first.")
+      @system)
+    (let [_ (reset! system (component/start-system (system/new-dev-system)))
+          pedestal (:pedestal @system)
+          log (logger/bound (:logger @system))]
+      (logger/log-call log :info "[System] System started successfully - all components are ready")
+      (println "[System] System started successfully - all components are ready")
+      (when pedestal
+        (println "[System] Server running. Check logs for port information."))
+      @system)))
+
+(s/defn stop!
+  "Stop the system. Useful for REPL development."
+  []
+  (when @system
+    (component/stop-system @system)
+    (reset! system nil)
+    (println "[System] System stopped successfully"))
+  (when (nil? @system)
+    (println "[System] System was not running")))
+
+(s/defn restart!
+  "Restart the system. Useful for REPL development."
+  []
+  (stop!)
+  (start!))
+
+(s/defn reload!
+  "Reload namespaces and restart the system. Useful for development when code changes."
+  []
+  (println "[System] Reloading namespaces...")
+  (require 'com.github.ebaptistella.handlers.http-server :reload)
+  (require 'com.github.ebaptistella.system :reload)
+  (require 'com.github.ebaptistella.components.pedestal :reload)
+  (println "[System] Namespaces reloaded. Restarting system...")
+  (restart!))
+
+(s/defn auto-start!
+  "Automatically starts the system when REPL is initialized."
+  []
+  (println "\n[REPL] Starting system...")
+  (try
+    (start!)
+    (println "[REPL] System started successfully!")
+    (catch Exception e
+      (println (format "[REPL] Error: %s" (.getMessage e)))
+      (println "[REPL] Start manually with: (com.github.ebaptistella.repl/start!)"))))
+
+;; Auto-start with delay when namespace is loaded
+(future
+  (Thread/sleep 1000)
+  (when (nil? @system)
+    (auto-start!)))
+
+(comment
+  (reload!)
+  (restart!))

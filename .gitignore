@@ -1,3 +1,6 @@
 .cursor/
 .env
 dev/ibmmq/20-spb-queues.mqsc
+.DS_Store
+.clj-kondo/
+.lsp/
