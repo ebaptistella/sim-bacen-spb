@@ -19,3 +19,17 @@
   (when @test-system
     (component/stop-system @test-system)
     (reset! test-system nil)))
+
+(defn test-base-url
+  "URL base HTTP do Pedestal (porta efetiva quando ::http/port é 0)."
+  []
+  (when-let [sys @test-system]
+    (when-let [jetty (:jetty-server (:pedestal sys))]
+      (when-let [port (try (-> jetty .getConnectors first .getLocalPort)
+                            (catch Exception _ nil))]
+        (str "http://127.0.0.1:" port)))))
+
+(defn test-store
+  "Store component do sistema de integração."
+  []
+  (:store @test-system))

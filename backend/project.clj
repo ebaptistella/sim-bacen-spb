@@ -32,7 +32,9 @@
                                   [nubank/matcher-combinators "3.8.3"]
                                   [nubank/mockfn "0.7.0"]
                                   [nubank/state-flow "5.20.0"]]}
-             :test {:resource-paths ["test/resources" "resources"]}
+             :test {:resource-paths ["test/resources" "resources"]
+                    :dependencies [[nubank/matcher-combinators "3.8.3"]
+                                    [nubank/state-flow "5.20.0"]]}
              :repl-auto {:repl-options {:init-ns com.github.ebaptistella.repl}}}
   :aliases {:repl ["with-profile" "+dev" "repl"]
             :repl-auto ["with-profile" "+dev,+repl-auto" "repl"]

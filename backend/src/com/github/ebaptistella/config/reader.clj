@@ -42,6 +42,14 @@
             :user     (or (System/getenv "IBMMQ_USER") (:user base))
             :password (or (System/getenv "IBMMQ_PASSWORD") (:password base))})))
 
+(s/defn simulator-ispb
+  "Returns the ISPB of this simulator instance.
+   Overridable via SIMULATOR_ISPB env var."
+  [config-component]
+  (or (System/getenv "SIMULATOR_ISPB")
+      (get-in (get-config config-component) [:simulator :ispb])
+      "99999999"))
+
 (s/defn mq-worker-config
   "Returns mq-worker config from the config component.
    Merges with defaults for :poll-interval-ms, :thread-pool-size, :batch-limit."

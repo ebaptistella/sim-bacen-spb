@@ -3,8 +3,11 @@
             [com.github.ebaptistella.components.logger :as components.logger]
             [com.github.ebaptistella.components.mq-worker :as components.mq-worker]
             [com.github.ebaptistella.components.pedestal :as components.pedestal]
+            [com.github.ebaptistella.components.store :as components.store]
             [com.github.ebaptistella.config.reader :as config.reader]
+            [com.github.ebaptistella.controllers.str.str0008]
             [com.github.ebaptistella.handlers.http-server :as handlers.http-server]
+            [com.github.ebaptistella.wire.in.str.str0008]
             [com.stuartsierra.component :as component]
             [schema.core :as s]))
 
@@ -19,12 +22,13 @@
     :config (component/using
              (components.configuration/new-config config.reader/default-config-file)
              [:logger])
+    :store  (components.store/new-store)
     :mq-worker (component/using
                 (components.mq-worker/new-mq-worker)
-                [:config :logger])
+                [:config :logger :store])
     :pedestal (component/using
                (components.pedestal/new-pedestal server-config)
-               [:config :logger]))))
+               [:config :logger :store]))))
 
 (s/defn new-dev-system
   []

@@ -8,7 +8,7 @@
 (s/defn process!
   "Processes a single SPB message.
    msg: map with :queue-name, :message-id, :body"
-  [msg mq-cfg log]
+  [msg _mq-cfg log]
   (logger/log-call log :info "[MessageController] Processing message | queue: %s | id: %s"
                    (:queue-name msg) (:message-id msg))
   (try

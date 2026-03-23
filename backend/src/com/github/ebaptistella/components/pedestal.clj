@@ -8,7 +8,7 @@
             [io.pedestal.interceptor :as interceptor]
             [schema.core :as s]))
 
-(defrecord PedestalComponent [server-config config logger server jetty-server system]
+(defrecord PedestalComponent [server-config config logger store server jetty-server system]
   component/Lifecycle
   (start [this]
     (if server
@@ -23,7 +23,7 @@
                                         base-config)]
                              (if host (assoc cfg ::http/host host) cfg))
                            base-config)
-            full-system  {:logger logger :config config :pedestal this}
+            full-system  {:logger logger :config config :pedestal this :store store}
             ctx-interceptor (let [captured full-system]
                               (interceptor/interceptor
                                {:name ::inject-context
@@ -32,9 +32,10 @@
                                            (-> ctx
                                                (assoc-in [:request ::http/context] {:system sys})
                                                (assoc-in [:request :components]
-                                                         {:logger  (:logger sys)
-                                                          :config  (:config sys)
-                                                          :pedestal (:pedestal sys)}))))}))
+                                                         {:logger   (:logger sys)
+                                                          :config   (:config sys)
+                                                          :pedestal (:pedestal sys)
+                                                          :store    (:store sys)}))))}))
             srv-cfg (-> (assoc final-config ::http/context {:system full-system})
                         http/default-interceptors
                         http/dev-interceptors

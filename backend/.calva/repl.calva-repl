@@ -1,0 +1,10 @@
+clj꞉com.github.ebaptistella.main꞉> 
+clj꞉com.github.ebaptistella.integration.str0008-flow-test꞉> 
+clj꞉com.github.ebaptistella.main꞉> 
+clj꞉com.github.ebaptistella.integration.str0008-flow-test꞉> 
+; Syntax error compiling at (src/com/github/ebaptistella/config/reader.clj:45:47).
+; No such namespace: nu
+clj꞉com.github.ebaptistella.config.reader꞉> 
+; Syntax error compiling at (src/com/github/ebaptistella/config/reader.clj:45:47).
+; No such namespace: nu
+clj꞉com.github.ebaptistella.config.reader꞉> 

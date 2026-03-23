@@ -2,5 +2,13 @@
 .env
 dev/ibmmq/20-spb-queues.mqsc
 .DS_Store
-.clj-kondo/
+.clj-kondo/.cache
 .lsp/
+.cursor/
+.claude/
+**/target/
+openspec/
+CLAUDE.md
+backend/.lein-failures
+**/.clj-kondo/
+backend/.nrepl-port
