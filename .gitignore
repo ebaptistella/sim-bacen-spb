@@ -16,3 +16,4 @@ backend/.nrepl-port
 **/node_modules/
 **/resources/public/js/
 backend/.lein-repl-history
+frontend/.lein-failures
