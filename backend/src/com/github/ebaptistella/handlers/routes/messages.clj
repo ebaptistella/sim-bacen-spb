@@ -13,4 +13,8 @@
     ["/api/v1/messages/:id"
      :get
      http-server.messages/get-message
-     :route-name :get-message]})
+     :route-name :get-message]
+    ["/api/v1/test/inject-message"
+     :post
+     http-server.messages/test-inject-message
+     :route-name :test-inject-message]})

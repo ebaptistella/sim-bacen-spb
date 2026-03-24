@@ -40,13 +40,28 @@
           (concat header-tags transfer-tags))))
 
 (s/defn r1-outbound-queue :- s/Str
+  "Derives the R1 outbound queue from an inbound queue name.
+   Convention: QL.{TYPE}.{SENDER}.{RECIPIENT}.NN → QR.{TYPE}.{RECIPIENT}.{SENDER}.NN"
   [queue-name :- s/Str]
-  (str/replace queue-name #"^QL" "QR"))
+  (let [parts (str/split queue-name #"\.")
+        v     (vec parts)]
+    (str/join "." (-> v (assoc 0 "QR") (assoc 2 (v 3)) (assoc 3 (v 2))))))
 
 (s/defn r2-outbound-queue :- (s/maybe s/Str)
+  "Derives the R2 outbound queue targeting ISPBIFCredtd.
+   Builds from r1 queue and replaces the reader slot (index 3) with ispb-if-credtd."
   [queue-name :- s/Str
    ispb-if-credtd :- (s/maybe s/Str)]
   (when ispb-if-credtd
     (let [r1    (r1-outbound-queue queue-name)
           parts (str/split r1 #"\.")]
-      (str/join "." (assoc (vec parts) 2 ispb-if-credtd)))))
+      (str/join "." (assoc (vec parts) 3 ispb-if-credtd)))))
+
+(s/defn sender-ispb-from-queue :- (s/maybe s/Str)
+  "Extracts the sender ISPB from a SPB queue name.
+   Convention: QL.{TYPE}.{SENDER_ISPB}.{RECIPIENT_ISPB}.NN → SENDER_ISPB (index 2)."
+  [queue-name :- s/Str]
+  (try
+    (nth (str/split queue-name #"\.") 2)
+    (catch Exception _
+      nil)))

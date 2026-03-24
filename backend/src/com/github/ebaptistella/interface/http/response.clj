@@ -7,5 +7,6 @@
 (s/defn no-content    :- {:status s/Int}             []             {:status 204})
 (s/defn bad-request   :- {:status s/Int :body {:error s/Str}} [msg] {:status 400 :body {:error msg}})
 (s/defn not-found     :- {:status s/Int :body {:error s/Str}} [msg] {:status 404 :body {:error msg}})
-(s/defn conflict      :- {:status s/Int :body {:error s/Str}} [msg] {:status 409 :body {:error msg}})
+(s/defn conflict             :- {:status s/Int :body {:error s/Str}} [msg] {:status 409 :body {:error msg}})
+(s/defn unprocessable-entity :- {:status s/Int :body {:error s/Str}} [msg] {:status 422 :body {:error msg}})
 (s/defn internal-server-error :- {:status s/Int :body {:error s/Str}} [msg] {:status 500 :body {:error msg}})

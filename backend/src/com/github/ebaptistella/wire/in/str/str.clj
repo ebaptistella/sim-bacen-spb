@@ -2,7 +2,8 @@
   "Adapter: raw MQ message (XML) → STR domain model.
    Uses defmulti dispatching on CodMsg so each STR type
    can register its own defmethod in a specialized namespace."
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [com.github.ebaptistella.logic.str.parser :as parser])
   (:import [java.time Instant]
            [java.util UUID]))
 
@@ -13,14 +14,6 @@
   (when-not (str/blank? body)
     (second (re-find #"<CodMsg>(\w+)</CodMsg>" body))))
 
-(defn- participant-from-queue
-  "Derives sender ISPB from queue name convention:
-   QL.{TYPE}.{SENDER_ISPB}.{RECIPIENT_ISPB}.NN → SENDER_ISPB"
-  [queue-name]
-  (try
-    (nth (str/split queue-name #"\.") 2)
-    (catch Exception _
-      nil)))
 
 (defmulti parse-inbound
   "Parses a raw MQ message into a STR domain model map.
@@ -36,7 +29,7 @@
     {:id          (str (UUID/randomUUID))
      :type        (or cod-msg :unknown)
      :num-ctrl-if nil
-     :participant (participant-from-queue queue-name)
+     :participant (parser/sender-ispb-from-queue queue-name)
      :queue-name  queue-name
      :message-id  message-id
      :body        body

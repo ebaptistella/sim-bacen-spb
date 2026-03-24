@@ -45,6 +45,12 @@
           (= result {:error :already-responded})
           (response/conflict "Message already responded")
 
+          (= result {:error :r2-already-sent})
+          (response/conflict "STR0008R2 already sent for this message")
+
+          (= result {:error :r2-requires-r1})
+          (response/unprocessable-entity "R2 requires R1 to be sent first")
+
           (= result {:error :missing-motivo})
           (response/bad-request "MotivoRejeicao is required for STR0008E")
 
@@ -62,3 +68,25 @@
           (response/internal-server-error (or (.getMessage e) "Respond failed"))))
       (catch Exception e
         (response/internal-server-error (or (.getMessage e) "MQ or internal error"))))))
+
+
+(defn test-inject-message [request]
+  (let [store (components/get-component request :store)
+        msg   {:id           (str (java.util.UUID/randomUUID))
+               :type         "STR0008"
+               :status       :pending
+               :direction    :inbound
+               :participant  "00000000"
+               :queue-name   "QL.REQ.00000000.99999999.01"
+               :message-id   (str "MSG-" (rand-int 999999))
+               :num-ctrl-if  "CTL20260323-TEST"
+               :body         "<STR0008><CodMsg>STR0008</CodMsg><NumCtrlIF>CTL20260323-TEST</NumCtrlIF><ISPBIFDebtd>00000000</ISPBIFDebtd><ISPBIFCredtd>99999999</ISPBIFCredtd><VlrLanc>5000.00</VlrLanc><FinlddCli>0001</FinlddCli><DtMovto>20260323</DtMovto></STR0008>"
+               :received-at  (str (java.time.Instant/now))
+               :response     nil
+               :vlr-lanc     "5000.00"
+               :ispb-if-debtd "00000000"
+               :ispb-if-credtd "99999999"
+               :finldd-cli   "0001"
+               :dt-movto     "20260323"}]
+    (store.messages/save! store msg)
+    (response/ok {:data {:id (:id msg) :type "STR0008"}})))

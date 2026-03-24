@@ -24,27 +24,30 @@
   "Reads up to `limit` messages from the inbound queue (QL.REQ.*).
    Returns a sequence of maps with :queue-name, :message-id, :body."
   [mq-cfg limit]
-  (try
-    (let [queue-name (System/getenv "IBMMQ_QL_REQ_NAME")          ; let-A opens
-          qmgr       (build-queue-manager mq-cfg)
-          open-opts  (bit-or CMQC/MQOO_INPUT_AS_Q_DEF CMQC/MQOO_FAIL_IF_QUIESCING)
-          queue      (.accessQueue qmgr queue-name open-opts)
-          gmo        (make-gmo)]
-      (loop [messages [] n 0]                                      ; loop opens
-        (if (>= n limit)                                           ; if-B opens
+  (let [queue-name (System/getenv "IBMMQ_QL_REQ_NAME")
+        qmgr       (build-queue-manager mq-cfg)
+        open-opts  (bit-or CMQC/MQOO_INPUT_AS_Q_DEF CMQC/MQOO_FAIL_IF_QUIESCING)
+        queue      (.accessQueue qmgr queue-name open-opts)
+        gmo        (make-gmo)]
+    (try
+      (loop [messages [] n 0]
+        (if (>= n limit)
           messages
-          (let [result (try                                        ; let-C opens, inner-try opens
-                         (let [msg (MQMessage.)]                  ; let-D opens
+          (let [result (try
+                         (let [msg (MQMessage.)]
                            (.get queue msg gmo)
                            {:queue-name queue-name
                             :message-id (String. (.messageId msg))
-                            :body       (.readUTF msg)})           ; let-D closes
+                            :body       (.readString msg (.getMessageLength msg))})
                          (catch MQException e
                            (if (= (.getReason e) CMQC/MQRC_NO_MSG_AVAILABLE)
                              ::no-more-messages
-                             (throw e))))]                         ; inner-try closes, let-C binding closes
-            (if (= result ::no-more-messages)                      ; if-E opens
+                             (throw e))))]
+            (if (= result ::no-more-messages)
               messages
-              (recur (conj messages result) (inc n)))))))          ; if-E closes, let-C closes, if-B closes, loop closes, let-A closes
-    (catch Exception _
-      [])))
+              (recur (conj messages result) (inc n))))))
+      (catch Exception e
+        [])
+      (finally
+        (try (.close queue) (catch Exception _))
+        (try (.disconnect qmgr) (catch Exception _))))))

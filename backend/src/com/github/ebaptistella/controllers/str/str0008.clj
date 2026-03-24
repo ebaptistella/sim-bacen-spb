@@ -13,23 +13,30 @@
 
 (defmethod process! "STR0008"
   [msg {:keys [store logger]}]
-  (let [log (logger/bound logger)]
-    (logger/log-call log :info "[STR] STR0008 received | id=%s type=%s"
-                     (:message-id msg) (:type msg))
-    (store.messages/save! store msg)))
+  (logger/log-call logger :info "[STR] STR0008 received | id=%s type=%s"
+                   (:message-id msg) (:type msg))
+  (store.messages/save! store msg))
 
 (s/defn send-response!
   [store mq-cfg msg-id {:keys [response-type params]}]
   (if-let [msg (store.messages/find-by-id store msg-id)]
     (cond
-      (= :responded (:status msg))
+      (and (= :responded (:status msg)) (not= "STR0008R2" response-type))
       {:error :already-responded}
 
       (not (accepted-response-types response-type))
       {:error :invalid-response-type}
 
+      (and (= :responded (:status msg)) (= "STR0008R2" response-type) (:r2-response msg))
+      {:error :r2-already-sent}
+
+      (and (= :pending (:status msg)) (= "STR0008R2" response-type))
+      {:error :r2-requires-r1}
+
       :else
-      (let [p      (or params {})
+      (let [p      (cond-> (or params {})
+                     (= "STR0008R2" response-type)
+                     (assoc :NumCtrlSTR (get-in msg [:response :num-ctrl-str])))
             fields (case response-type
                      "STR0008R1" (logic.str0008/r1-response msg p)
                      "STR0008R2" (logic.str0008/r2-response msg p)
@@ -46,10 +53,16 @@
             (when (nil? queue-name)
               (throw (ex-info "Cannot derive outbound queue for STR0008R2 (missing ISPBIFCredtd?)" {})))
             (mq.producer/send-message! mq-cfg queue-name xml)
-            (store.messages/update-message! store msg-id
-                                            #(assoc % :status :responded
-                                                      :response {:type response-type
-                                                                 :body xml
-                                                                 :sent-at (str (Instant/now))}))
+            (if (= "STR0008R2" response-type)
+              (store.messages/update-message! store msg-id
+                                              #(assoc % :r2-response {:type response-type
+                                                                       :body xml
+                                                                       :sent-at (str (Instant/now))}))
+              (store.messages/update-message! store msg-id
+                                              #(assoc % :status :responded
+                                                        :response {:type        response-type
+                                                                   :body        xml
+                                                                   :sent-at     (str (Instant/now))
+                                                                   :num-ctrl-str (:NumCtrlSTR fields)})))
             {:ok true}))))
     {:error :not-found}))

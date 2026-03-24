@@ -35,15 +35,23 @@
       (is (every? nil? (vals m))))))
 
 (deftest r1-outbound-queue-test
-  (testing "replaces QL prefix with QR"
-    (is (= "QR.REQ.00000000.99999999.01"
+  (testing "swaps sender/recipient and changes QL to QR"
+    (is (= "QR.REQ.99999999.00000000.01"
            (parser/r1-outbound-queue "QL.REQ.00000000.99999999.01")))
-    (is (= "QR.RSP.00000000.99999999.02"
+    (is (= "QR.RSP.99999999.00000000.02"
            (parser/r1-outbound-queue "QL.RSP.00000000.99999999.02")))))
 
 (deftest r2-outbound-queue-test
-  (testing "replaces sender segment (index 2) with ISPBIFCredtd"
-    (is (= "QR.REQ.11111111.99999999.01"
+  (testing "builds from r1 queue and replaces reader slot with ISPBIFCredtd"
+    (is (= "QR.REQ.99999999.11111111.01"
            (parser/r2-outbound-queue "QL.REQ.00000000.99999999.01" "11111111"))))
   (testing "nil ispb-if-credtd returns nil"
     (is (nil? (parser/r2-outbound-queue "QL.REQ.00000000.99999999.01" nil)))))
+
+(deftest sender-ispb-from-queue-test
+  (testing "extracts sender ISPB from index 2"
+    (is (= "00000000" (parser/sender-ispb-from-queue "QL.REQ.00000000.99999999.01"))))
+  (testing "works for different queue types"
+    (is (= "12345678" (parser/sender-ispb-from-queue "QL.RSP.12345678.99999999.02"))))
+  (testing "returns nil for malformed queue name"
+    (is (nil? (parser/sender-ispb-from-queue "INVALID")))))

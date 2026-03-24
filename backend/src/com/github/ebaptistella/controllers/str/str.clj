@@ -15,8 +15,7 @@
 
 (defmethod process! :default
   [msg {:keys [store logger]}]
-  (let [log (logger/bound logger)]
-    (logger/log-call log :warn
-                     "[STR] No handler for type=%s id=%s — storing as :pending"
-                     (str (:type msg)) (:id msg))
-    (store.messages/save! store msg)))
+  (logger/log-call logger :warn
+                   "[STR] No handler for type=%s id=%s — storing as :pending"
+                   (str (:type msg)) (:id msg))
+  (store.messages/save! store msg))

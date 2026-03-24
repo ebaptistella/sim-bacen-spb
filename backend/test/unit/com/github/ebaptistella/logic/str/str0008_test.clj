@@ -24,12 +24,15 @@
     (let [msg {:num-ctrl-if "X" :ispb-if-debtd "Y"}
           r1  (str0008/r1-response msg {:SitLancSTR "REJEITADO"})]
       (is (= "REJEITADO" (:SitLancSTR r1)))))
-  (testing "DtMovto reflects processing date, not original :dt-movto from request"
+  (testing "DtMovto echoes original :dt-movto from request"
     (let [msg {:num-ctrl-if "A" :ispb-if-debtd "B" :dt-movto "20240115"}
+          r1  (str0008/r1-response msg nil)]
+      (is (= "20240115" (:DtMovto r1)))))
+  (testing "DtMovto falls back to today when :dt-movto is nil"
+    (let [msg {:num-ctrl-if "A" :ispb-if-debtd "B" :dt-movto nil}
           r1  (str0008/r1-response msg nil)
           now (.format fmt-date (.atZone (Instant/now) zone-br))]
-      (is (= now (:DtMovto r1)))
-      (is (not= (:dt-movto msg) (:DtMovto r1))))))
+      (is (= now (:DtMovto r1))))))
 
 (deftest r2-response-test
   (testing "echoes ISPBIFDebtd, ISPBIFCredtd, VlrLanc, FinlddCli"
@@ -48,7 +51,11 @@
           r2  (str0008/r2-response msg nil)
           now (.format fmt-datetime (.atZone (Instant/now) zone-br))]
       (is (re-matches #"\d{14}" (:DtHrBC r2)))
-      (is (= now (:DtHrBC r2))))))
+      (is (= now (:DtHrBC r2)))))
+  (testing "NumCtrlSTR from params is preserved (shared with R1)"
+    (let [msg {:ispb-if-debtd "0" :ispb-if-credtd "1" :vlr-lanc "1" :finldd-cli "01"}
+          r2  (str0008/r2-response msg {:NumCtrlSTR "abc123fixed00000000x"})]
+      (is (= "abc123fixed00000000x" (:NumCtrlSTR r2))))))
 
 (deftest rejection-response-and-xml-test
   (testing "missing MotivoRejeicao returns {:error :missing-motivo}"

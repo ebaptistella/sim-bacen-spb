@@ -1,17 +1,9 @@
 (ns com.github.ebaptistella.wire.in.str.str0008
   "Wire-in STR0008: raw XML → domain model using fields extracted by logic.str.parser."
-  (:require [clojure.string :as str]
-            [com.github.ebaptistella.logic.str.parser :as parser]
+  (:require [com.github.ebaptistella.logic.str.parser :as parser]
             [com.github.ebaptistella.wire.in.str.str :refer [parse-inbound]])
   (:import [java.time Instant]
            [java.util UUID]))
-
-(defn- extract-sender-ispb
-  [queue-name]
-  (try
-    (nth (str/split queue-name #"\.") 2)
-    (catch Exception _
-      nil)))
 
 (defmethod parse-inbound "STR0008"
   [{:keys [queue-name message-id body]}]
@@ -24,7 +16,7 @@
      :vlr-lanc       (:vlr-lanc fields)
      :finldd-cli     (:finldd-cli fields)
      :dt-movto       (:dt-movto fields)
-     :participant    (extract-sender-ispb queue-name)
+     :participant    (parser/sender-ispb-from-queue queue-name)
      :queue-name     queue-name
      :message-id     message-id
      :body           body

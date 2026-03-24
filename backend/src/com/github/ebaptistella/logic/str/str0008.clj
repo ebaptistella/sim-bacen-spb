@@ -59,18 +59,19 @@
      :NumCtrlSTR  (new-control-number)
      :SitLancSTR  sit
      :DtHrSit     (format-datetime now)
-     :DtMovto     (format-date now)}))
+     :DtMovto     (or (:dt-movto msg) (format-date now))}))
 
 (s/defn r2-response :- {s/Keyword s/Any}
   [msg :- InboundMessage
-   _params :- (s/maybe OverrideParams)]
-  (let [now (Instant/now)]
+   params :- (s/maybe OverrideParams)]
+  (let [now (Instant/now)
+        p   (or params {})]
     {:CodMsg       "STR0008R2"
      :ISPBIFDebtd  (:ispb-if-debtd msg)
      :ISPBIFCredtd (:ispb-if-credtd msg)
      :VlrLanc      (:vlr-lanc msg)
      :FinlddCli    (:finldd-cli msg)
-     :NumCtrlSTR   (new-control-number)
+     :NumCtrlSTR   (or (:NumCtrlSTR p) (new-control-number))
      :DtHrBC       (format-datetime now)}))
 
 (s/defn rejection-response :- (s/conditional

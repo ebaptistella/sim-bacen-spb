@@ -71,7 +71,7 @@
     (match? :responded (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
     (match? "STR0008R1" (sf/invoke #(-> (store.messages/find-by-id store id) :response :type)))
     (match? some? (sf/invoke #(-> (store.messages/find-by-id store id) :response :sent-at)))
-    (match? "QR.REQ.00000000.99999999.01" (sf/invoke #(:queue @capture)))
+    (match? "QR.REQ.99999999.00000000.01" (sf/invoke #(:queue @capture)))
     (match? true (sf/invoke #(str/includes? (:xml @capture) "STR0008R1")))))
 
 (defflow str0008-respond-404
@@ -118,6 +118,41 @@
     (match? 400 (sf/invoke #(:status resp)))
     (match? :pending (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
     (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :response)))))
+
+(defflow str0008-r2-before-r1
+  {:init flow-init}
+  (flow "POST STR0008R2 on pending message — 422, status remains :pending"
+    [store    (sf/get-state :store)
+     base-url (sf/get-state :base-url)
+     id       (sf/invoke #(str (random-uuid)))
+     _        (sf/invoke #(store.messages/save! store (assoc (sample-str0008-msg id) :id id)))
+     resp     (sf/invoke #(http-post-json base-url (str "/api/v1/messages/" id "/respond")
+                                          {:response-type "STR0008R2"}))]
+    (match? 422 (sf/invoke #(:status resp)))
+    (match? :pending (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
+    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :r2-response)))))
+
+(defflow str0008-r1-then-r2-same-num-ctrl-str
+  {:init flow-init}
+  (flow "POST R1 then R2 — R2 XML contains same NumCtrlSTR as R1"
+    [store    (sf/get-state :store)
+     base-url (sf/get-state :base-url)
+     capture  (sf/invoke #(atom {:r1-xml nil :r2-xml nil}))
+     id       (sf/invoke #(str (random-uuid)))
+     _        (sf/invoke #(store.messages/save! store (assoc (sample-str0008-msg id) :id id)))
+     _        (sf/invoke #(with-redefs [mq.producer/send-message!
+                                         (fn [_ _ body] (swap! capture assoc :r1-xml body))]
+                            (http-post-json base-url (str "/api/v1/messages/" id "/respond")
+                                            {:response-type "STR0008R1"})))
+     _        (sf/invoke #(with-redefs [mq.producer/send-message!
+                                         (fn [_ _ body] (swap! capture assoc :r2-xml body))]
+                            (http-post-json base-url (str "/api/v1/messages/" id "/respond")
+                                            {:response-type "STR0008R2"})))]
+    (match? some? (sf/invoke #(re-find #"<NumCtrlSTR>([^<]+)</NumCtrlSTR>" (:r1-xml @capture))))
+    (match? some? (sf/invoke #(re-find #"<NumCtrlSTR>([^<]+)</NumCtrlSTR>" (:r2-xml @capture))))
+    (match? true  (sf/invoke #(let [r1-ncs (second (re-find #"<NumCtrlSTR>([^<]+)</NumCtrlSTR>" (:r1-xml @capture)))
+                                    r2-ncs (second (re-find #"<NumCtrlSTR>([^<]+)</NumCtrlSTR>" (:r2-xml @capture)))]
+                                (= r1-ncs r2-ncs))))))
 
 (defflow str0008-mq-failure
   {:init flow-init}

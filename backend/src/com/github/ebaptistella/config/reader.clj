@@ -36,7 +36,7 @@
   (let [base (get-in (get-config config-component) [:mq])]
     (merge base
            {:host     (or (System/getenv "IBMMQ_HOST") (:host base))
-            :port     (or (some-> (System/getenv "IBMMQ_PORT") #(Integer/parseInt %)) (:port base))
+            :port     (or (some-> (System/getenv "IBMMQ_PORT") Integer/parseInt) (:port base))
             :channel  (or (System/getenv "IBMMQ_CHANNEL") (:channel base))
             :qmgr     (or (System/getenv "IBMMQ_QMGR_NAME") (:qmgr base))
             :user     (or (System/getenv "IBMMQ_USER") (:user base))
