@@ -11,34 +11,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && chmod +x /usr/local/bin/lein \
     && lein self-install
 
+# Copiar SOMENTE project.clj — invalidação de cache apenas quando deps mudam
 COPY project.clj ./
-RUN --mount=type=cache,target=/root/.m2/repository \
+RUN --mount=type=cache,id=backend-m2,target=/root/.m2/repository \
     lein deps
 
 # =============================================================================
-# Stage 2: builder — substitui config, compila uberjar
+# Stage 2: builder — compila uberjar reutilizando cache m2
 # =============================================================================
 FROM deps AS builder
-COPY . .
 
-# Substitui application.edn pelos hostnames dos serviços Docker (service names)
-RUN cat > resources/config/application.edn << 'APPCONF'
-{:application-name "sim-bacen-spb"
- :config-file "resources/config/application.edn"
- :http {:port 3000
-        :host "0.0.0.0"}
- :mq {:host "ibmmq"
-      :port 1414
-      :channel "DEV.APP.SVRCONN"
-      :qmgr "QM1"
-      :user "app"
-      :password "app@mq123"}
- :mq-worker {:poll-interval-ms 2000
-             :thread-pool-size 4
-             :batch-limit 10}}
-APPCONF
+COPY src/ src/
+COPY resources/ resources/
 
-RUN --mount=type=cache,target=/root/.m2/repository \
+RUN --mount=type=cache,id=backend-m2,target=/root/.m2/repository \
     lein uberjar
 
 # =============================================================================
@@ -47,7 +33,8 @@ RUN --mount=type=cache,target=/root/.m2/repository \
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-COPY --from=builder /app/target/sim-bacen-spb-0.1.0-SNAPSHOT-standalone.jar /app/app.jar
+# Wildcard evita quebra quando a versão muda no project.clj
+COPY --from=builder /app/target/*-standalone.jar /app/app.jar
 COPY --from=builder /app/resources/logback.xml /app/logback.xml
 
 EXPOSE 3000

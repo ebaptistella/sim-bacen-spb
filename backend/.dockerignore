@@ -1,0 +1,8 @@
+target/
+.lein-repl-history
+.lein-failures
+.nrepl-port
+.clj-kondo/
+.lsp/
+.DS_Store
+test/

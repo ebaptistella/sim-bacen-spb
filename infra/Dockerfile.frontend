@@ -1,26 +1,51 @@
 # =============================================================================
-# Stage 1: builder — compila ClojureScript para JavaScript (produção)
+# Stage 1: node-deps — instala dependências npm (camada cacheável)
 # =============================================================================
-FROM eclipse-temurin:21-jdk AS builder
+FROM node:20-alpine AS node-deps
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSL https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein \
-       -o /usr/local/bin/lein \
-    && chmod +x /usr/local/bin/lein \
-    && lein self-install
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+ENV HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTPS_PROXY} NO_PROXY=${NO_PROXY}
 
-COPY project.clj ./
-RUN --mount=type=cache,target=/root/.m2/repository \
-    lein deps
-
-COPY . .
-RUN --mount=type=cache,target=/root/.m2/repository \
-    lein cljsbuild once app
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,id=frontend-npm,target=/root/.npm \
+    npm ci \
+      --fetch-retries=5 \
+      --fetch-retry-mintimeout=10000 \
+      --fetch-retry-maxtimeout=120000 \
+      --fetch-timeout=120000
 
 # =============================================================================
-# Stage 2: runtime — nginx serve os assets estáticos e proxia /api ao backend
+# Stage 2: builder — compila ClojureScript via Shadow-CLJS + Leiningen
+# =============================================================================
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+RUN apk add --no-cache curl openjdk21-jre-headless bash && \
+    curl -fsSL https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein \
+      -o /usr/local/bin/lein && \
+    chmod +x /usr/local/bin/lein && \
+    lein self-install
+
+# Reaproveitar node_modules do stage anterior
+COPY --from=node-deps /app/node_modules ./node_modules/
+
+# Copiar apenas arquivos de config de deps — cache de m2 só invalida se project.clj mudar
+COPY package.json project.clj shadow-cljs.edn ./
+RUN --mount=type=cache,id=frontend-m2,target=/root/.m2/repository \
+    lein deps
+
+# Agora copiar source — só essa camada invalida em mudanças de código
+COPY src/ src/
+COPY resources/ resources/
+
+RUN --mount=type=cache,id=frontend-m2,target=/root/.m2/repository \
+    npm run release
+
+# =============================================================================
+# Stage 3: runtime — nginx serve os assets estáticos e proxia /api ao backend
 # =============================================================================
 FROM nginx:alpine
 
@@ -31,7 +56,6 @@ RUN printf 'server {\n\
     root /usr/share/nginx/html;\n\
     index index.html;\n\
 \n\
-    # Proxia chamadas de API para o serviço backend\n\
     location /api/ {\n\
         proxy_pass http://backend:3000;\n\
         proxy_set_header Host $host;\n\
@@ -39,7 +63,6 @@ RUN printf 'server {\n\
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n\
     }\n\
 \n\
-    # SPA fallback: redireciona rotas desconhecidas para index.html\n\
     location / {\n\
         try_files $uri $uri/ /index.html;\n\
     }\n\
