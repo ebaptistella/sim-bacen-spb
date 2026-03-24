@@ -15,16 +15,20 @@
             [lein-shadow "0.4.1"]]
   :clojure-lsp {:settings {:clean {:ns-inner-blocks-indentation :same-line}}}
   :clean-targets ^{:protect false} ["resources/public/js" "target" "node_modules/.cache"]
-  :source-paths ["src"]
+  :source-paths ["src" "test"]
   :resource-paths ["resources"]
   :shadow-cljs {:builds
-                {:app {:target    :browser
-                       :output-dir "resources/public/js"
-                       :asset-path "/js"
-                       :modules   {:main {:init-fn com.github.ebaptistella.frontend.core/init}}}}}
+                {:app  {:target    :browser
+                        :output-dir "resources/public/js"
+                        :asset-path "/js"
+                        :modules   {:main {:init-fn com.github.ebaptistella.frontend.core/init}}}
+                 :test {:target    :node-test
+                        :output-to "target/test/test.js"
+                        :ns-regexp "-test$"}}}
   :aliases {:build     ["do" ["clean"] ["shadow" "release" "app"]]
             :dev       ["shadow" "watch" "app"]
             :compile   ["shadow" "compile" "app"]
+            :test      ["shadow" "test" "test"]
             :clean-ns  ["clojure-lsp" "clean-ns" "--dry"]
             :format    ["clojure-lsp" "format" "--dry"]
             :clean-ns-fix ["clojure-lsp" "clean-ns"]
