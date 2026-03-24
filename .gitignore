@@ -12,3 +12,7 @@ CLAUDE.md
 backend/.lein-failures
 **/.clj-kondo/
 backend/.nrepl-port
+**/.shadow-cljs/
+**/node_modules/
+**/resources/public/js/
+backend/.lein-repl-history
