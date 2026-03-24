@@ -22,24 +22,7 @@
 
 <body class="bg-gradient-to-br from-indigo-500 to-purple-600 min-h-screen p-5">
   <div id="app"></div>
-  <script src="/js/app.js"></script>
-  <script>
-    (function runApp(retries) {
-      retries = retries || 0;
-      var ns = window.com && window.com.github && window.com.github.ebaptistella && window.com.github.ebaptistella.ui && window.com.github.ebaptistella.ui.core;
-      var init = typeof window.__spb_init__ === 'function' ? window.__spb_init__ : (ns && ns.init);
-      if (init) {
-        try { init(); return; } catch (e) { console.error('spb init error', e); }
-      }
-      if (retries < 50) {
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function () { runApp(retries + 1); });
-        } else {
-          setTimeout(function () { runApp(retries + 1); }, 100);
-        }
-      }
-    })();
-  </script>
+  <script src="/js/main.js"></script>
 </body>
 
 </html>
