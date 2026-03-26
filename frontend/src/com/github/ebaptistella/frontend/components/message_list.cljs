@@ -2,13 +2,23 @@
   (:require [com.github.ebaptistella.frontend.util.format :as fmt]
             [re-frame.core :as rf]))
 
-(defn- status-badge [status]
-  (let [pending? (= status "pending")]
-    [:span {:class (str "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium "
-                        (if pending?
-                          "bg-yellow-100 text-yellow-800"
-                          "bg-green-100 text-green-800"))}
-     (if pending? "Pendente" "Respondida")]))
+(defn- status-badge [status direction]
+  (cond
+    (= direction "outbound")
+    [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-purple-100.text-purple-800
+     "Enviada"]
+
+    (= status "auto-responded")
+    [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-blue-100.text-blue-800
+     "Auto"]
+
+    (= status "pending")
+    [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-yellow-100.text-yellow-800
+     "Pendente"]
+
+    :else
+    [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-green-100.text-green-800
+     "Respondida"]))
 
 (defn- message-row [msg selected-id]
   (let [selected? (= (:id msg) selected-id)]
@@ -20,7 +30,7 @@
      [:td.px-4.py-3.text-sm.font-mono.text-indigo-600 (:type msg)]
      [:td.px-4.py-3.text-sm.font-mono (:participant msg)]
      [:td.px-4.py-3.text-sm.text-right.font-mono (fmt/format-currency (:vlr-lanc msg))]
-     [:td.px-4.py-3.text-sm [status-badge (name (:status msg))]]
+     [:td.px-4.py-3.text-sm [status-badge (name (:status msg)) (:direction msg)]]
      [:td.px-4.py-3.text-sm.text-gray-500 (fmt/format-date (:received-at msg))]
      [:td.px-4.py-3.text-sm.font-mono.text-gray-600 (:num-ctrl-if msg)]
      [:td.px-4.py-3.text-sm.text-gray-500 (:finldd-cli msg)]]))
@@ -32,7 +42,7 @@
            :on-click #(rf/dispatch [:messages/select-message (:id msg)])}
      [:div.flex.items-center.justify-between.mb-2
       [:span.font-mono.text-indigo-600.font-medium (:type msg)]
-      [status-badge (name (:status msg))]]
+      [status-badge (name (:status msg)) (:direction msg)]]
      [:div.grid.grid-cols-2.gap-1.text-sm
       [:span.text-gray-500 "Participante:"]
       [:span.font-mono (:participant msg)]

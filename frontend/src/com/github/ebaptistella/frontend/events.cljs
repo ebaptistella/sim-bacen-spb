@@ -1,6 +1,7 @@
 (ns com.github.ebaptistella.frontend.events
   (:require [com.github.ebaptistella.frontend.db :as db]
             [com.github.ebaptistella.frontend.events.messages-events]
+            [com.github.ebaptistella.frontend.events.outbound-events]
             [com.github.ebaptistella.frontend.events.respond-events]
             [com.github.ebaptistella.frontend.events.router-events]
             [com.github.ebaptistella.frontend.events.toast-events]

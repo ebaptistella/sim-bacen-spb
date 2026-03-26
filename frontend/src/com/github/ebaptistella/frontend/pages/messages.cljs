@@ -1,5 +1,6 @@
 (ns com.github.ebaptistella.frontend.pages.messages
-  (:require [com.github.ebaptistella.frontend.components.confirmation-modal :as confirmation]
+  (:require [com.github.ebaptistella.frontend.components.broadcast-form :as broadcast]
+            [com.github.ebaptistella.frontend.components.confirmation-modal :as confirmation]
             [com.github.ebaptistella.frontend.components.message-detail-panel :as detail]
             [com.github.ebaptistella.frontend.components.message-list :as list]
             [com.github.ebaptistella.frontend.components.respond-modal :as respond]
@@ -21,9 +22,14 @@
       (let [selected-id @(rf/subscribe [:messages/selected-id])]
         [:div.min-h-screen.bg-gray-100
          [toast/toast]
-         [:header.bg-gradient-to-r.from-indigo-500.to-purple-600.text-white.p-6.text-center
-          [:h1.text-3xl.md:text-4xl.font-bold.mb-1 "Simulador BACEN"]
-          [:p.text-base.opacity-90 "Sistema de Pagamentos Brasileiro"]]
+         [:header.bg-gradient-to-r.from-indigo-500.to-purple-600.text-white.p-6
+          [:div.flex.items-center.justify-between.max-w-7xl.mx-auto
+           [:div.text-center.flex-1
+            [:h1.text-3xl.md:text-4xl.font-bold.mb-1 "Simulador BACEN"]
+            [:p.text-base.opacity-90 "Sistema de Pagamentos Brasileiro"]]
+           [:button {:class    "flex-shrink-0 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-50 transition-colors text-sm"
+                     :on-click #(rf/dispatch [:outbound/open-modal])}
+            "Enviar Mensagem BACEN"]]]
          [:main {:class (str "max-w-7xl mx-auto p-4 "
                              (when selected-id
                                "sm:grid sm:grid-cols-5 sm:gap-4"))}
@@ -35,4 +41,5 @@
              [:div.bg-white.rounded-lg.shadow.overflow-hidden
               [detail/message-detail-panel]]])]
          [respond/respond-modal]
+         [broadcast/broadcast-form]
          [confirmation/confirmation-modal]]))}))

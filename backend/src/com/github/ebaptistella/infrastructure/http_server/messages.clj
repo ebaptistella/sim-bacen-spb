@@ -1,10 +1,11 @@
 (ns com.github.ebaptistella.infrastructure.http-server.messages
   (:require [com.github.ebaptistella.config.reader :as config.reader]
+            [com.github.ebaptistella.controllers.str.outbound :as controllers.outbound]
             [com.github.ebaptistella.controllers.str.str0008 :as controllers.str0008]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.interceptors.components :as components]
             [com.github.ebaptistella.interface.http.response :as response]
-            [com.github.ebaptistella.wire.in.messages :refer [RespondBody]]
+            [com.github.ebaptistella.wire.in.messages :refer [OutboundBody RespondBody]]
             [com.github.ebaptistella.wire.out.str.messages :as wire.out.messages]
             [schema.core :as s])
   (:import [clojure.lang ExceptionInfo]))
@@ -70,8 +71,43 @@
         (response/internal-server-error (or (.getMessage e) "MQ or internal error"))))))
 
 
+(s/defn handle-outbound [request]
+  (let [store  (components/get-component request :store)
+        config (components/get-component request :config)
+        mq-cfg (config.reader/mq-config config)
+        raw    (:json-params request)]
+    (try
+      (let [req         (s/validate OutboundBody raw)
+            msg-type    (:type req)
+            participant (:participant req)
+            params      (or (:params req) {})
+            result      (controllers.outbound/send-outbound! msg-type participant params
+                                                             {:store  store
+                                                              :mq-cfg mq-cfg
+                                                              :config config})]
+        (cond
+          (:ok result)
+          (response/created {:data {:id      (:id result)
+                                    :type    msg-type
+                                    :sent-at (:sent-at result)}})
+
+          (#{:invalid-type :invalid-participant} (:error result))
+          (response/bad-request (str "Invalid request: " (name (:error result))))
+
+          (= :mq-error (:error result))
+          (response/internal-server-error "Falha ao enviar na fila MQ")
+
+          :else
+          (response/internal-server-error "Unexpected outbound result")))
+      (catch ExceptionInfo _
+        (response/bad-request "Tipo ou parâmetros inválidos"))
+      (catch Exception e
+        (response/internal-server-error (or (.getMessage e) "MQ or internal error"))))))
+
 (defn test-inject-message [request]
-  (let [store (components/get-component request :store)
+  (if-not (= "true" (System/getenv "ENABLE_TEST_ENDPOINTS"))
+    (response/not-found "Not found")
+    (let [store (components/get-component request :store)
         msg   {:id           (str (java.util.UUID/randomUUID))
                :type         "STR0008"
                :status       :pending
@@ -88,5 +124,5 @@
                :ispb-if-credtd "99999999"
                :finldd-cli   "0001"
                :dt-movto     "20260323"}]
-    (store.messages/save! store msg)
-    (response/ok {:data {:id (:id msg) :type "STR0008"}})))
+      (store.messages/save! store msg)
+      (response/ok {:data {:id (:id msg) :type "STR0008"}}))))

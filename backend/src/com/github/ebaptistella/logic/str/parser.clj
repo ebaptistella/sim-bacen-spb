@@ -65,3 +65,51 @@
     (nth (str/split queue-name #"\.") 2)
     (catch Exception _
       nil)))
+
+(s/defn parse-str0001 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0001 (horários STR query) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if   (xml-value body "NumCtrlIF")
+   :ispb-if-debtd (xml-value body "ISPBIFDebtd")
+   :dt-ref        (xml-value body "DtRef")})
+
+(s/defn parse-str0012 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0012 (lançamentos query) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if     (xml-value body "NumCtrlIF")
+   :ispb-if-debtd   (xml-value body "ISPBIFDebtd")
+   :dt-movto        (xml-value body "DtMovto")
+   :num-ctrl-str-or (xml-value body "NumCtrlSTROr")
+   :sit-lanc-str    (xml-value body "SitLancSTR")})
+
+(s/defn parse-str0013 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0013 (saldo query) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if   (xml-value body "NumCtrlIF")
+   :ispb-if-debtd (xml-value body "ISPBIFDebtd")
+   :dt-ref        (xml-value body "DtRef")})
+
+(s/defn parse-str0014 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0014 (extrato query) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if   (xml-value body "NumCtrlIF")
+   :ispb-if-debtd (xml-value body "ISPBIFDebtd")
+   :dt-ref        (xml-value body "DtRef")
+   :hr-ini        (xml-value body "HrIni")
+   :hr-fim        (xml-value body "HrFim")})
+
+(s/defn status->sit-lanc-str :- s/Str
+  "Maps store status keywords to STR SitLancSTR codes."
+  [status :- s/Keyword]
+  (case status
+    :pending        "PENDENTE"
+    :responded      "LQDADO"
+    :auto-responded "LQDADO"
+    "PENDENTE"))
+
+(s/defn type->tp-lanc :- s/Str
+  "Maps STR message type to TpLanc code for extrato responses."
+  [msg-type :- s/Str]
+  (case msg-type
+    "STR0008" "TED"
+    "OTR"))

@@ -17,4 +17,8 @@
     ["/api/v1/test/inject-message"
      :post
      http-server.messages/test-inject-message
-     :route-name :test-inject-message]})
+     :route-name :test-inject-message]
+    ["/api/v1/messages/outbound"
+     :post
+     http-server.messages/handle-outbound
+     :route-name :outbound-message]})

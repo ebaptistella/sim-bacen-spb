@@ -5,3 +5,8 @@
 (s/defschema RespondBody
   {:response-type (s/enum "STR0008R1" "STR0008R2" "STR0008E")
    (s/optional-key :params) {s/Keyword s/Any}})
+
+(s/defschema OutboundBody
+  {:type                    (s/constrained s/Str #{"STR0015" "STR0016" "STR0017"})
+   :participant             (s/constrained s/Str #(re-matches #"[0-9]{8}" %))
+   (s/optional-key :params) {s/Any s/Any}})

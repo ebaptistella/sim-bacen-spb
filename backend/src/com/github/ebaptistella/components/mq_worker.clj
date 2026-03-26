@@ -5,14 +5,19 @@
             [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.controllers.str.str :as controllers.str]
             com.github.ebaptistella.controllers.str.str0008
+            com.github.ebaptistella.controllers.str.query
             [com.github.ebaptistella.infrastructure.mq.consumer :as mq.consumer]
             [com.github.ebaptistella.wire.in.str.str :as wire.in.str]
             com.github.ebaptistella.wire.in.str.str0008
+            com.github.ebaptistella.wire.in.str.str0001
+            com.github.ebaptistella.wire.in.str.str0012
+            com.github.ebaptistella.wire.in.str.str0013
+            com.github.ebaptistella.wire.in.str.str0014
             [com.stuartsierra.component :as component]
             [schema.core :as s])
   (:import [java.util.concurrent Executors TimeUnit]))
 
-(defn- run-worker-loop [run? poll-ms limit mq-cfg store log exec]
+(defn- run-worker-loop [run? poll-ms limit mq-cfg store config log exec]
   (while @run?
     (try
       (Thread/sleep (long poll-ms))
@@ -27,7 +32,8 @@
                          (when-let [parsed (wire.in.str/parse-inbound raw)]
                            (controllers.str/process! parsed {:store  store
                                                              :logger log
-                                                             :mq-cfg mq-cfg}))
+                                                             :mq-cfg mq-cfg
+                                                             :config config}))
                          (catch Exception e
                            (logger/log-call log :warn
                                             "[MQWorker] Failed to process message id=%s: %s"
@@ -50,7 +56,7 @@
             limit      (or batch-limit (:batch-limit worker-cfg))
             exec       (Executors/newFixedThreadPool (int pool-size))
             run?       (atom true)
-            t          (doto (Thread. ^Runnable (fn [] (run-worker-loop run? poll-ms limit mq-cfg store log exec)))
+            t          (doto (Thread. ^Runnable (fn [] (run-worker-loop run? poll-ms limit mq-cfg store config log exec)))
                          (.setName "mq-worker")
                          (.setDaemon true)
                          (.start))]

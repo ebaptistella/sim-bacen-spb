@@ -10,10 +10,12 @@
 (defn message-detail-panel []
   (let [msg @(rf/subscribe [:messages/selected-message])]
     (when msg
-      (let [pending?    (= (:status msg) "pending")
-            responded?  (= (:status msg) "responded")
-            response    (:response msg)
-            r2-response (:r2-response msg)]
+      (let [pending?        (= (:status msg) "pending")
+            responded?      (= (:status msg) "responded")
+            auto-responded? (= (:status msg) "auto-responded")
+            outbound?       (= (:direction msg) "outbound")
+            response        (:response msg)
+            r2-response     (:r2-response msg)]
         [:div {:class "bg-white border-l border-gray-200 overflow-y-auto
                         fixed inset-0 z-40 sm:static sm:z-auto sm:inset-auto"}
          [:div.flex.items-center.justify-between.p-4.border-b.border-gray-200.bg-gray-50
@@ -28,19 +30,32 @@
           [:dl
            [field-row "Tipo" (:type msg)]
            [field-row "Participante" (:participant msg)]
-           [field-row "Valor" (fmt/format-currency (:vlr-lanc msg))]
-           [field-row "Status" (if pending? "Pendente" "Respondida")]
-           [field-row "Recebida em" (fmt/format-date (:received-at msg))]
-           [field-row "NumCtrlIF" (:num-ctrl-if msg)]
-           [field-row "ISPB IF Debitada" (:ispb-if-debtd msg)]
-           [field-row "ISPB IF Creditada" (:ispb-if-credtd msg)]
-           [field-row "Finalidade" (:finldd-cli msg)]
-           [field-row "Data Movimento" (fmt/format-date (:dt-movto msg))]]
+           (when-not outbound?
+             [:<>
+              [field-row "Valor" (fmt/format-currency (:vlr-lanc msg))]
+              [field-row "NumCtrlIF" (:num-ctrl-if msg)]
+              [field-row "ISPB IF Debitada" (:ispb-if-debtd msg)]
+              [field-row "ISPB IF Creditada" (:ispb-if-credtd msg)]
+              [field-row "Finalidade" (:finldd-cli msg)]
+              [field-row "Data Movimento" (fmt/format-date (:dt-movto msg))]
+              [field-row "Recebida em" (fmt/format-date (:received-at msg))]])
+           (when outbound?
+             [field-row "Enviada em" (fmt/format-date (:sent-at msg))])
+           [field-row "Fila" (:queue-name msg)]]
           [:<>
+           (when outbound?
+             [:div.mt-4.p-3.bg-purple-50.rounded-lg.border.border-purple-200
+              [:p.text-sm.font-medium.text-purple-800.mb-1 "XML Enviado (Broadcast)"]
+              [:pre.text-xs.text-purple-700.whitespace-pre-wrap.break-all (:body msg)]])
            (when responded?
              [:div.mt-4.p-3.bg-green-50.rounded-lg.border.border-green-200
               [:p.text-sm.text-green-800
                "Respondida em " [:span.font-medium (fmt/format-date (get-in response [:sent-at]))]
+               " — tipo: " [:span.font-mono.font-medium (:type response)]]])
+           (when auto-responded?
+             [:div.mt-4.p-3.bg-blue-50.rounded-lg.border.border-blue-200
+              [:p.text-sm.text-blue-800
+               "Auto-respondida em " [:span.font-medium (fmt/format-date (get-in response [:sent-at]))]
                " — tipo: " [:span.font-mono.font-medium (:type response)]]])
            (when r2-response
              [:div.mt-2.p-3.bg-blue-50.rounded-lg.border.border-blue-200
@@ -48,10 +63,12 @@
                "R2 enviada em " [:span.font-medium (fmt/format-date (:sent-at r2-response))]
                " — " [:span.font-mono.font-medium "STR0008R2"]]])
            [:div.mt-6
-            (if pending?
-              [:button {:class    "w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg
-                                    hover:bg-indigo-700 transition-colors font-medium"
+            (cond
+              pending?
+              [:button {:class    "w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                         :on-click #(rf/dispatch [:respond/open-modal])}
                "Responder"]
+
+              :else
               [:div.text-center.text-sm.text-gray-400
                "Nenhuma ação disponível"])]]]]))))

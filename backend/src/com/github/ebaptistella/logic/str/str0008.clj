@@ -1,35 +1,9 @@
 (ns com.github.ebaptistella.logic.str.str0008
   "Pure STR0008 logic: field maps and XML serialization for R1, R2 and E responses."
   (:require [clojure.string :as str]
+            [com.github.ebaptistella.logic.str.xml :as xml]
             [schema.core :as s])
-  (:import [java.time Instant ZoneId]
-           [java.time.format DateTimeFormatter]
-           [java.util UUID]))
-
-(def ^:private zone-br (ZoneId/of "America/Sao_Paulo"))
-
-(def ^:private fmt-datetime (DateTimeFormatter/ofPattern "yyyyMMddHHmmss"))
-
-(def ^:private fmt-date (DateTimeFormatter/ofPattern "yyyyMMdd"))
-
-(defn- new-control-number []
-  (-> (str (UUID/randomUUID))
-      (str/replace "-" "")
-      (subs 0 20)))
-
-(defn- format-datetime [^Instant inst]
-  (.format fmt-datetime (.atZone inst zone-br)))
-
-(defn- format-date [^Instant inst]
-  (.format fmt-date (.atZone inst zone-br)))
-
-(defn- escape-xml [v]
-  (when (some? v)
-    (-> (str v)
-        (str/replace "&" "&amp;")
-        (str/replace "<" "&lt;")
-        (str/replace ">" "&gt;")
-        (str/replace "\"" "&quot;"))))
+  (:import [java.time Instant]))
 
 (def ^:private field-ordering
   {"STR0008R1" [:CodMsg :NumCtrlIF :ISPBIFDebtd :NumCtrlSTR :SitLancSTR :DtHrSit :DtMovto]
@@ -56,10 +30,10 @@
     {:CodMsg      "STR0008R1"
      :NumCtrlIF   (:num-ctrl-if msg)
      :ISPBIFDebtd (:ispb-if-debtd msg)
-     :NumCtrlSTR  (new-control-number)
+     :NumCtrlSTR  (xml/new-control-number)
      :SitLancSTR  sit
-     :DtHrSit     (format-datetime now)
-     :DtMovto     (or (:dt-movto msg) (format-date now))}))
+     :DtHrSit     (xml/format-datetime now)
+     :DtMovto     (or (:dt-movto msg) (xml/format-date now))}))
 
 (s/defn r2-response :- {s/Keyword s/Any}
   [msg :- InboundMessage
@@ -71,8 +45,8 @@
      :ISPBIFCredtd (:ispb-if-credtd msg)
      :VlrLanc      (:vlr-lanc msg)
      :FinlddCli    (:finldd-cli msg)
-     :NumCtrlSTR   (or (:NumCtrlSTR p) (new-control-number))
-     :DtHrBC       (format-datetime now)}))
+     :NumCtrlSTR   (or (:NumCtrlSTR p) (xml/new-control-number))
+     :DtHrBC       (xml/format-datetime now)}))
 
 (s/defn rejection-response :- (s/conditional
                                  #(contains? % :error) {:error (s/eq :missing-motivo)}
@@ -95,5 +69,5 @@
         parts   (for [k ordered
                       :let [v (get fields-map k)]
                       :when (some? v)]
-                  (str "<" (name k) ">" (escape-xml v) "</" (name k) ">"))]
+                  (str "<" (name k) ">" (xml/escape v) "</" (name k) ">"))]
     (str "<" response-type ">" (apply str parts) "</" response-type ">")))

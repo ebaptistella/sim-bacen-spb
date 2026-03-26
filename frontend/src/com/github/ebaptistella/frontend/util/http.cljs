@@ -65,3 +65,11 @@
     :headers {"Content-Type" "application/json"
               "Accept"       "application/json"}
     :body    (.stringify js/JSON (clj->js body))}))
+
+(defn post-outbound [body]
+  (fetch-with-retry
+   "/api/v1/messages/outbound"
+   {:method  "POST"
+    :headers {"Content-Type" "application/json"
+              "Accept"       "application/json"}
+    :body    (.stringify js/JSON (clj->js body))}))

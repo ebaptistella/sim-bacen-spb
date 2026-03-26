@@ -56,3 +56,24 @@
   [config-component]
   (merge default-mq-worker
          (get-in (get-config config-component) [:mq-worker])))
+
+(s/defn str-horario-abertura
+  "Returns the STR opening hour. Overridable via STR_HORARIO_ABERTURA env var."
+  [config-component]
+  (or (System/getenv "STR_HORARIO_ABERTURA")
+      (get-in (get-config config-component) [:str :horario-abertura])
+      "07:00"))
+
+(s/defn str-horario-fechamento
+  "Returns the STR closing hour. Overridable via STR_HORARIO_FECHAMENTO env var."
+  [config-component]
+  (or (System/getenv "STR_HORARIO_FECHAMENTO")
+      (get-in (get-config config-component) [:str :horario-fechamento])
+      "17:30"))
+
+(s/defn str-saldo-simulado
+  "Returns the simulated account balance. Overridable via STR_SALDO_SIMULADO env var."
+  [config-component]
+  (or (System/getenv "STR_SALDO_SIMULADO")
+      (get-in (get-config config-component) [:str :saldo-simulado])
+      "99999999.99"))

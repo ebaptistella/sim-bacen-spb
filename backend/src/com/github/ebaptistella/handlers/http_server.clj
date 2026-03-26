@@ -13,8 +13,9 @@
   (route/expand-routes (combine-routes)))
 
 (def server-config
-  (merge {::http/type      :jetty
-          ::http/routes    routes
+  (merge {::http/type        :jetty
+          ::http/routes      routes
+          ::http/router      :linear-search
           ::http/resource-path "/public"
           ::http/container-options {}}
          {::http/join? false}))
