@@ -4,11 +4,19 @@
   (:require [com.github.ebaptistella.components.logger :as logger]
             [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.controllers.str.str :as controllers.str]
+            com.github.ebaptistella.controllers.str.str0005
+            com.github.ebaptistella.controllers.str.str0006
+            com.github.ebaptistella.controllers.str.str0007
             com.github.ebaptistella.controllers.str.str0008
+            com.github.ebaptistella.controllers.str.str0011
             com.github.ebaptistella.controllers.str.query
             [com.github.ebaptistella.infrastructure.mq.consumer :as mq.consumer]
             [com.github.ebaptistella.wire.in.str.str :as wire.in.str]
+            com.github.ebaptistella.wire.in.str.str0005
+            com.github.ebaptistella.wire.in.str.str0006
+            com.github.ebaptistella.wire.in.str.str0007
             com.github.ebaptistella.wire.in.str.str0008
+            com.github.ebaptistella.wire.in.str.str0011
             com.github.ebaptistella.wire.in.str.str0001
             com.github.ebaptistella.wire.in.str.str0012
             com.github.ebaptistella.wire.in.str.str0013

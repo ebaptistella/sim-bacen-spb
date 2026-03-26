@@ -1,7 +1,7 @@
 (ns com.github.ebaptistella.infrastructure.http-server.messages
   (:require [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.controllers.str.outbound :as controllers.outbound]
-            [com.github.ebaptistella.controllers.str.str0008 :as controllers.str0008]
+            [com.github.ebaptistella.controllers.str.str :as controllers.str]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.interceptors.components :as components]
             [com.github.ebaptistella.interface.http.response :as response]
@@ -34,32 +34,35 @@
         id      (get-in request [:path-params :id])
         raw     (:json-params request)]
     (try
-      (let [req    (s/validate RespondBody raw)
-            result (controllers.str0008/send-response! store mq-cfg id req)]
-        (cond
-          (= result {:ok true})
-          (response/ok {:data {:message-id id :response-type (:response-type req)}})
-
-          (= result {:error :not-found})
+      (let [req (s/validate RespondBody raw)
+            msg (store.messages/find-by-id store id)]
+        (if (nil? msg)
           (response/not-found (str "Message not found: " id))
+          (let [result (controllers.str/respond! msg {:store store :mq-cfg mq-cfg} req)]
+            (cond
+              (= result {:ok true})
+              (response/ok {:data {:message-id id :response-type (:response-type req)}})
 
-          (= result {:error :already-responded})
-          (response/conflict "Message already responded")
+              (= result {:error :already-responded})
+              (response/conflict "Message already responded")
 
-          (= result {:error :r2-already-sent})
-          (response/conflict "STR0008R2 already sent for this message")
+              (= result {:error :r2-already-sent})
+              (response/conflict "R2 already sent for this message")
 
-          (= result {:error :r2-requires-r1})
-          (response/unprocessable-entity "R2 requires R1 to be sent first")
+              (= result {:error :r2-requires-r1})
+              (response/unprocessable-entity "R2 requires R1 to be sent first")
 
-          (= result {:error :missing-motivo})
-          (response/bad-request "MotivoRejeicao is required for STR0008E")
+              (= result {:error :missing-motivo})
+              (response/bad-request "MotivoRejeicao is required")
 
-          (= result {:error :invalid-response-type})
-          (response/bad-request "Invalid response-type")
+              (= result {:error :invalid-response-type})
+              (response/bad-request "Invalid response-type")
 
-          :else
-          (response/internal-server-error "Unexpected respond result")))
+              (= result {:error :unsupported-type})
+              (response/bad-request (str "Unsupported message type: " (:type msg)))
+
+              :else
+              (response/internal-server-error "Unexpected respond result")))))
       (catch ExceptionInfo e
         (cond
           (= :schema.core/error (:type (ex-data e)))

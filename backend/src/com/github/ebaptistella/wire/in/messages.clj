@@ -3,7 +3,7 @@
   (:require [schema.core :as s]))
 
 (s/defschema RespondBody
-  {:response-type (s/enum "STR0008R1" "STR0008R2" "STR0008E")
+  {:response-type s/Str
    (s/optional-key :params) {s/Keyword s/Any}})
 
 (s/defschema OutboundBody

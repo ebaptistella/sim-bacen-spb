@@ -113,3 +113,14 @@
   (case msg-type
     "STR0008" "TED"
     "OTR"))
+
+(s/defn parse-str0007 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0007 (TED IF→cliente) relevant fields from XML body.
+   Uses FinlddIF (not FinlddCli) as STR0007 is an IF-initiated transfer."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})

@@ -26,13 +26,11 @@
       (catch ExceptionInfo e
         (is (= :schema.core/error (:type (ex-data e)))))))
 
-  (testing "invalid — response-type outside enum"
-    (is (some? (s/check RespondBody {:response-type "STR9999X"})))
-    (try
-      (s/validate RespondBody {:response-type "STR9999X"})
-      (is false "should throw")
-      (catch ExceptionInfo e
-        (is (= :schema.core/error (:type (ex-data e))))))))
+  (testing "any string passes — unknown type accepted at schema level"
+    (is (nil? (s/check RespondBody {:response-type "STR9999X"})))
+    (is (nil? (s/check RespondBody {:response-type "STR0011R1"})))
+    (is (nil? (s/check RespondBody {:response-type "STR0005R2"})))
+    (is (nil? (s/check RespondBody {:response-type "STR0007R2"})))))
 
 (deftest outbound-body-schema-test
   (testing "outbound-body-valid-str0015 — type and participant only"

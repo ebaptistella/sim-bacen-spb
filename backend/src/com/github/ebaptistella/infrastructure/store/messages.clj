@@ -56,6 +56,15 @@
          (filter #(= (get-in % [:response :num-ctrl-str]) num-ctrl-str))
          first)))
 
+(defn find-by-num-ctrl-if
+  "Returns the first message whose :num-ctrl-if equals num-ctrl-if, or nil if not found.
+   NumCtrlIF is unique per IF per lançamento in the SPB protocol; O(n) scan is acceptable
+   for the in-memory simulator. In case of collision, returns the earliest inserted entry (FIFO)."
+  [store-component num-ctrl-if]
+  (->> (:messages @(:store store-component))
+       (filter #(= (:num-ctrl-if %) num-ctrl-if))
+       first))
+
 (defn get-by-period
   "Returns messages received on dt-str, optionally filtered by hour range.
    dt-str: 'YYYYMMDD'. hr-ini and hr-fim: 'HH:MM' (optional)."
