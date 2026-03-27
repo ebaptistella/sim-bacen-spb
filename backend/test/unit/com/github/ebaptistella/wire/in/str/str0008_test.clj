@@ -16,7 +16,7 @@
                 :message-id "mid-1"
                 :body       xml}
           m    (wire.in.str/parse-inbound raw)]
-      (is (= "STR0008" (:type m)))
+      (is (= :STR0008 (:type m)))
       (is (= "ABC123" (:num-ctrl-if m)))
       (is (= "00000000" (:ispb-if-debtd m)))
       (is (= "11111111" (:ispb-if-credtd m)))

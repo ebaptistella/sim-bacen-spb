@@ -5,11 +5,11 @@
   (:import [java.time Instant]
            [java.util UUID]))
 
-(defmethod parse-inbound "STR0008"
+(defmethod parse-inbound :STR0008
   [{:keys [queue-name message-id body]}]
   (let [fields (parser/parse-fields body)]
     {:id             (str (UUID/randomUUID))
-     :type           "STR0008"
+     :type           :STR0008
      :num-ctrl-if    (:num-ctrl-if fields)
      :ispb-if-debtd  (:ispb-if-debtd fields)
      :ispb-if-credtd (:ispb-if-credtd fields)

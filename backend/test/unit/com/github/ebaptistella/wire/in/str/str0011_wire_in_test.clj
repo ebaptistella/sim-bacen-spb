@@ -14,7 +14,7 @@
 (deftest str0011-wire-in-type-test
   (testing ":type is STR0011"
     (let [result (parse-inbound raw-input)]
-      (is (= "STR0011" (:type result))))))
+      (is (= :STR0011 (:type result))))))
 
 (deftest str0011-wire-in-status-test
   (testing ":status is :pending"
