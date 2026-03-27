@@ -17,7 +17,7 @@
 (deftest r1-response-test
   (testing "CodMsg is STR0007R1"
     (let [fields (str0007/r1-response base-msg nil)]
-      (is (= "STR0007R1" (:CodMsg fields)))))
+      (is (= :STR0007R1 (:CodMsg fields)))))
   (testing "SitLancSTR defaults to LQDADO"
     (let [fields (str0007/r1-response base-msg nil)]
       (is (= "LQDADO" (:SitLancSTR fields)))))
@@ -46,7 +46,7 @@
 (deftest r2-response-usa-finldd-if-test
   (testing "CodMsg is STR0007R2"
     (let [fields (str0007/r2-response base-msg nil)]
-      (is (= "STR0007R2" (:CodMsg fields)))))
+      (is (= :STR0007R2 (:CodMsg fields)))))
   (testing "ISPBIFDebtd is echoed from msg"
     (let [fields (str0007/r2-response base-msg nil)]
       (is (= "00000000" (:ISPBIFDebtd fields)))))
@@ -92,7 +92,7 @@
 (deftest rejection-response-com-motivo-test
   (testing "CodMsg is STR0007E"
     (let [fields (str0007/rejection-response base-msg {:MotivoRejeicao "AC09"})]
-      (is (= "STR0007E" (:CodMsg fields)))))
+      (is (= :STR0007E (:CodMsg fields)))))
   (testing "NumCtrlIF is echoed from msg"
     (let [fields (str0007/rejection-response base-msg {:MotivoRejeicao "AC09"})]
       (is (= "NC-007" (:NumCtrlIF fields)))))

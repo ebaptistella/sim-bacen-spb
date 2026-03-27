@@ -12,7 +12,7 @@
 (deftest r1-response-cancelado-test
   (testing "CodMsg is STR0011R1"
     (let [fields (str0011/r1-response base-msg nil)]
-      (is (= "STR0011R1" (:CodMsg fields)))))
+      (is (= :STR0011R1 (:CodMsg fields)))))
   (testing "SitLancSTR is CANCELADO"
     (let [fields (str0011/r1-response base-msg nil)]
       (is (= "CANCELADO" (:SitLancSTR fields)))))
@@ -53,7 +53,7 @@
       (is (str/includes? xml "<MotivoRejeicao>AC09</MotivoRejeicao>"))))
   (testing "CodMsg is STR0011E"
     (let [fields (str0011/rejection-response base-msg {:MotivoRejeicao "AC09"})]
-      (is (= "STR0011E" (:CodMsg fields)))))
+      (is (= :STR0011E (:CodMsg fields)))))
   (testing "NumCtrlIF is echoed from msg"
     (let [fields (str0011/rejection-response base-msg {:MotivoRejeicao "AC09"})]
       (is (= "NC-011" (:NumCtrlIF fields)))))

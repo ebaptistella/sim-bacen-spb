@@ -27,7 +27,7 @@
   (let [p   (or params {})
         now (Instant/now)
         sit (or (:SitLancSTR p) (:sit-lanc-str p) "LQDADO")]
-    {:CodMsg      "STR0005R1"
+    {:CodMsg      :STR0005R1
      :NumCtrlIF   (:num-ctrl-if msg)
      :ISPBIFDebtd (:ispb-if-debtd msg)
      :NumCtrlSTR  (xml/new-control-number)
@@ -40,7 +40,7 @@
    params :- (s/maybe OverrideParams)]
   (let [now (Instant/now)
         p   (or params {})]
-    {:CodMsg       "STR0005R2"
+    {:CodMsg       :STR0005R2
      :ISPBIFDebtd  (:ispb-if-debtd msg)
      :ISPBIFCredtd (:ispb-if-credtd msg)
      :VlrLanc      (:vlr-lanc msg)
@@ -57,7 +57,7 @@
         motivo (or (:MotivoRejeicao p) (:motivo-rejeicao p))]
     (if (or (nil? motivo) (str/blank? (str motivo)))
       {:error :missing-motivo}
-      {:CodMsg         "STR0005E"
+      {:CodMsg         :STR0005E
        :NumCtrlIF      (:num-ctrl-if msg)
        :ISPBIFDebtd    (:ispb-if-debtd msg)
        :MotivoRejeicao (str motivo)})))
@@ -69,5 +69,5 @@
         parts   (for [k ordered
                       :let [v (get fields-map k)]
                       :when (some? v)]
-                  (str "<" (name k) ">" (xml/escape v) "</" (name k) ">"))]
+                  (str "<" (name k) ">" (xml/escape (if (keyword? v) (name v) v)) "</" (name k) ">"))]
     (str "<" response-type ">" (apply str parts) "</" response-type ">")))
