@@ -20,7 +20,7 @@
   [msg :- InboundMessage
    params :- (s/maybe OverrideParams)]
   (let [now (Instant/now)]
-    {:CodMsg      "STR0011R1"
+    {:CodMsg      :STR0011R1
      :NumCtrlIF   (:num-ctrl-if msg)
      :ISPBIFDebtd (:ispb-if-debtd msg)
      :NumCtrlSTR  (xml/new-control-number)
@@ -36,7 +36,7 @@
         motivo (or (:MotivoRejeicao p) (:motivo-rejeicao p))]
     (if (or (nil? motivo) (str/blank? (str motivo)))
       {:error :missing-motivo}
-      {:CodMsg         "STR0011E"
+      {:CodMsg         :STR0011E
        :NumCtrlIF      (:num-ctrl-if msg)
        :ISPBIFDebtd    (:ispb-if-debtd msg)
        :MotivoRejeicao (str motivo)})))
@@ -48,5 +48,5 @@
         parts   (for [k ordered
                       :let [v (get fields-map k)]
                       :when (some? v)]
-                  (str "<" (name k) ">" (xml/escape v) "</" (name k) ">"))]
+                  (str "<" (name k) ">" (xml/escape (if (keyword? v) (name v) v)) "</" (name k) ">"))]
     (str "<" response-type ">" (apply str parts) "</" response-type ">")))

@@ -17,7 +17,7 @@
 (deftest r1-response-test
   (testing "CodMsg is STR0005R1"
     (let [fields (str0005/r1-response base-msg nil)]
-      (is (= "STR0005R1" (:CodMsg fields)))))
+      (is (= :STR0005R1 (:CodMsg fields)))))
   (testing "SitLancSTR defaults to LQDADO when params is nil"
     (let [fields (str0005/r1-response base-msg nil)]
       (is (= "LQDADO" (:SitLancSTR fields)))))
@@ -43,7 +43,7 @@
 (deftest r2-response-test
   (testing "CodMsg is STR0005R2"
     (let [fields (str0005/r2-response base-msg nil)]
-      (is (= "STR0005R2" (:CodMsg fields)))))
+      (is (= :STR0005R2 (:CodMsg fields)))))
   (testing "FinlddCli is echoed from msg in XML"
     (let [fields (str0005/r2-response base-msg nil)
           xml    (str0005/response->xml "STR0005R2" fields)]
@@ -80,4 +80,4 @@
       (is (str/includes? xml "<MotivoRejeicao>AC09</MotivoRejeicao>"))))
   (testing "CodMsg is STR0005E when MotivoRejeicao is provided"
     (let [fields (str0005/rejection-response base-msg {:MotivoRejeicao "AC09"})]
-      (is (= "STR0005E" (:CodMsg fields))))))
+      (is (= :STR0005E (:CodMsg fields))))))
