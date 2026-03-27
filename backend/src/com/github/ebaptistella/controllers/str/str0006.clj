@@ -1,7 +1,7 @@
 (ns com.github.ebaptistella.controllers.str.str0006
   "STR0006: TED de cliente para IF. Fluxo2: R1 + R2 + E."
   (:require [com.github.ebaptistella.components.logger :as logger]
-            [com.github.ebaptistella.controllers.str.str :refer [process! respond!]]
+            [com.github.ebaptistella.controllers.str.str :refer [available-responses process! respond!]]
             [com.github.ebaptistella.infrastructure.mq.producer :as mq.producer]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.logic.str.parser :as parser]
@@ -9,6 +9,8 @@
   (:import [java.time Instant]))
 
 (def ^:private accepted-response-types #{:STR0006R1 :STR0006R2 :STR0006E})
+
+(defmethod available-responses :STR0006 [_msg] [:STR0006R1 :STR0006R2 :STR0006E])
 
 (defmethod process! :STR0006
   [msg {:keys [store logger]}]

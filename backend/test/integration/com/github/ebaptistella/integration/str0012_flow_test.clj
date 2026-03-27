@@ -13,7 +13,7 @@
 (defn- sample-str0012-msg
   [id dt-movto]
   {:id            id
-   :type          "STR0012"
+   :type          :STR0012
    :status        :pending
    :direction     :inbound
    :num-ctrl-if   "NC-Q-001"
@@ -50,7 +50,7 @@
    :message-id     "mq-8-test"
    :body           "<CodMsg>STR0008</CodMsg>"
    :received-at    received-at
-   :response       {:type        "STR0008R1"
+   :response       {:type        :STR0008R1
                     :num-ctrl-str "ABCD1234567890ABCD12"
                     :body        "<STR0008R1/>"
                     :sent-at     received-at}})
@@ -98,7 +98,7 @@
             (sf/invoke #(str/includes? (:xml @capture) "<QtdLanc>0</QtdLanc>")))
     (match? :auto-responded
             (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? "STR0012R1"
+    (match? :STR0012R1
             (sf/invoke #(-> (store.messages/find-by-id store id) :response :type)))))
 
 (defflow str0012-store-with-lancamento-returns-one
@@ -119,7 +119,7 @@
             (sf/invoke #(str/includes? (:xml @capture) "<QtdLanc>1</QtdLanc>")))
     (match? :auto-responded
             (sf/invoke #(-> (store.messages/find-by-id store id-12) :status)))
-    (match? "STR0012R1"
+    (match? :STR0012R1
             (sf/invoke #(-> (store.messages/find-by-id store id-12) :response :type)))))
 
 (defflow str0012-r1-xml-contains-num-ctrl-str

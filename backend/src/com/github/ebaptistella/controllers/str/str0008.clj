@@ -1,7 +1,7 @@
 (ns com.github.ebaptistella.controllers.str.str0008
   "STR0008: inbound persistence and response orchestration (Logic Sandwich)."
   (:require [com.github.ebaptistella.components.logger :as logger]
-            [com.github.ebaptistella.controllers.str.str :refer [process! respond!]]
+            [com.github.ebaptistella.controllers.str.str :refer [available-responses process! respond!]]
             [com.github.ebaptistella.infrastructure.mq.producer :as mq.producer]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.logic.str.parser :as parser]
@@ -9,6 +9,8 @@
   (:import [java.time Instant]))
 
 (def ^:private accepted-response-types #{:STR0008R1 :STR0008R2 :STR0008E})
+
+(defmethod available-responses :STR0008 [_msg] [:STR0008R1 :STR0008R2 :STR0008E])
 
 (defmethod process! :STR0008
   [msg {:keys [store logger]}]

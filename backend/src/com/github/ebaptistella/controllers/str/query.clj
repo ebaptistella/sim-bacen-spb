@@ -47,7 +47,7 @@
         r1-xml (logic.str0001/r1-response msg cfg)
         queue  (r1-queue msg)]
     (mq.producer/send-message! mq-cfg queue r1-xml)
-    (persist-and-respond! store msg r1-xml "STR0001R1")))
+    (persist-and-respond! store msg r1-xml :STR0001R1)))
 
 ;; ---- STR0012 handler -------------------------------------------------------
 
@@ -58,7 +58,7 @@
         r1-xml      (logic.str0012/r1-response msg (vec lancamentos))
         queue       (r1-queue msg)]
     (mq.producer/send-message! mq-cfg queue r1-xml)
-    (persist-and-respond! store msg r1-xml "STR0012R1")))
+    (persist-and-respond! store msg r1-xml :STR0012R1)))
 
 ;; ---- STR0013 handler -------------------------------------------------------
 
@@ -68,7 +68,7 @@
         r1-xml (logic.str0013/r1-response msg cfg)
         queue  (r1-queue msg)]
     (mq.producer/send-message! mq-cfg queue r1-xml)
-    (persist-and-respond! store msg r1-xml "STR0013R1")))
+    (persist-and-respond! store msg r1-xml :STR0013R1)))
 
 ;; ---- STR0014 handler -------------------------------------------------------
 
@@ -79,22 +79,22 @@
         r1-xml     (logic.str0014/r1-response msg (vec movimentos))
         queue      (r1-queue msg)]
     (mq.producer/send-message! mq-cfg queue r1-xml)
-    (persist-and-respond! store msg r1-xml "STR0014R1")))
+    (persist-and-respond! store msg r1-xml :STR0014R1)))
 
 ;; ---- defmethods ------------------------------------------------------------
 
-(defmethod process! "STR0001"
+(defmethod process! :STR0001
   [msg components]
   (handle-str0001! msg components))
 
-(defmethod process! "STR0012"
+(defmethod process! :STR0012
   [msg components]
   (handle-str0012! msg components))
 
-(defmethod process! "STR0013"
+(defmethod process! :STR0013
   [msg components]
   (handle-str0013! msg components))
 
-(defmethod process! "STR0014"
+(defmethod process! :STR0014
   [msg components]
   (handle-str0014! msg components))

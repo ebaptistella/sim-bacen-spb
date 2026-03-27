@@ -11,6 +11,18 @@
   (:import [java.net URI]
            [java.net.http HttpClient HttpRequest HttpResponse$BodyHandlers HttpRequest$BodyPublishers]))
 
+(defn- http-get-json
+  [base-url path]
+  (let [client (HttpClient/newHttpClient)
+        uri    (URI/create (str base-url path))
+        req    (-> (HttpRequest/newBuilder uri)
+                   (.GET)
+                   .build)
+        resp   (.send client req (HttpResponse$BodyHandlers/ofString))]
+    {:status (.statusCode resp)
+     :body   (try (json/parse-string (.body resp) true)
+                  (catch Exception _ (.body resp)))}))
+
 (defn- http-post-json
   [base-url path body-map]
   (let [client (HttpClient/newHttpClient)
@@ -153,6 +165,18 @@
     (match? true  (sf/invoke #(let [r1-ncs (second (re-find #"<NumCtrlSTR>([^<]+)</NumCtrlSTR>" (:r1-xml @capture)))
                                     r2-ncs (second (re-find #"<NumCtrlSTR>([^<]+)</NumCtrlSTR>" (:r2-xml @capture)))]
                                 (= r1-ncs r2-ncs))))))
+
+(defflow str0008-get-includes-available-responses
+  {:init flow-init}
+  (flow "GET /api/v1/messages/:id — payload includes available-responses [R1 R2 E]"
+    [store    (sf/get-state :store)
+     base-url (sf/get-state :base-url)
+     id       (sf/invoke #(str (random-uuid)))
+     _        (sf/invoke #(store.messages/save! store (assoc (sample-str0008-msg id) :id id)))
+     resp     (sf/invoke #(http-get-json base-url (str "/api/v1/messages/" id)))]
+    (match? 200 (sf/invoke #(:status resp)))
+    (match? ["STR0008R1" "STR0008R2" "STR0008E"]
+            (sf/invoke #(-> resp :body :data :available-responses)))))
 
 (defflow str0008-mq-failure
   {:init flow-init}

@@ -36,3 +36,11 @@
                      "[STR] No respond! handler for type=%s"
                      (str (:type msg))))
   {:error :unsupported-type})
+
+(defmulti available-responses
+  "Returns an ordered vector of valid response-type keywords for a given message,
+   or nil if no manual response is applicable (e.g. auto-responded query messages).
+   Dispatch: (:type msg)"
+  (fn [msg] (:type msg)))
+
+(defmethod available-responses :default [_msg] nil)

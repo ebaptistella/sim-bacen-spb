@@ -1,7 +1,7 @@
 (ns com.github.ebaptistella.controllers.str.str0011
   "STR0011: cancelamento manual de lançamento pendente. R1=CANCELADO, E=rejeitado."
   (:require [com.github.ebaptistella.components.logger :as logger]
-            [com.github.ebaptistella.controllers.str.str :refer [process! respond!]]
+            [com.github.ebaptistella.controllers.str.str :refer [available-responses process! respond!]]
             [com.github.ebaptistella.infrastructure.mq.producer :as mq.producer]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.logic.str.parser :as parser]
@@ -10,6 +10,8 @@
   (:import [java.time Instant]))
 
 (def ^:private accepted-response-types #{:STR0011R1 :STR0011E})
+
+(defmethod available-responses :STR0011 [_msg] [:STR0011R1 :STR0011E])
 
 (defmethod process! :STR0011
   [msg {:keys [store logger]}]

@@ -36,7 +36,7 @@
               [field-row "NumCtrlIF" (:num-ctrl-if msg)]
               [field-row "ISPB IF Debitada" (:ispb-if-debtd msg)]
               [field-row "ISPB IF Creditada" (:ispb-if-credtd msg)]
-              [field-row "Finalidade" (:finldd-cli msg)]
+              [field-row "Finalidade" (or (:finldd-cli msg) (:finldd-if msg))]
               [field-row "Data Movimento" (fmt/format-date (:dt-movto msg))]
               [field-row "Recebida em" (fmt/format-date (:received-at msg))]])
            (when outbound?
@@ -61,14 +61,11 @@
              [:div.mt-2.p-3.bg-blue-50.rounded-lg.border.border-blue-200
               [:p.text-sm.text-blue-800
                "R2 enviada em " [:span.font-medium (fmt/format-date (:sent-at r2-response))]
-               " — " [:span.font-mono.font-medium "STR0008R2"]]])
+               " — " [:span.font-mono.font-medium (:type r2-response)]]])
            [:div.mt-6
-            (cond
-              pending?
+            (if (seq (:available-responses msg))
               [:button {:class    "w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                         :on-click #(rf/dispatch [:respond/open-modal])}
                "Responder"]
-
-              :else
               [:div.text-center.text-sm.text-gray-400
                "Nenhuma ação disponível"])]]]]))))

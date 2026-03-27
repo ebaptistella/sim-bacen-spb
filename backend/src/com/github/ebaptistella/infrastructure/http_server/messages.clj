@@ -10,21 +10,25 @@
             [schema.core :as s])
   (:import [clojure.lang ExceptionInfo]))
 
+(defn- enrich-with-available-responses [msg]
+  (assoc msg :available-responses (controllers.str/available-responses msg)))
+
 (s/defn list-messages [request]
   (let [store  (components/get-component request :store)
         params (:query-params request)
         limit  (or (some-> (get params "limit") Integer/parseInt) 20)
         offset (or (some-> (get params "offset") Integer/parseInt) 0)
         status (some-> (get params "status") keyword)
-        result (store.messages/list-messages store {:limit limit :offset offset :status status})]
-    (response/ok (wire.out.messages/->list-response result))))
+        result (store.messages/list-messages store {:limit limit :offset offset :status status})
+        enriched (update result :messages #(mapv enrich-with-available-responses %))]
+    (response/ok (wire.out.messages/->list-response enriched))))
 
 (s/defn get-message [request]
   (let [store (components/get-component request :store)
         id    (get-in request [:path-params :id])
         msg   (store.messages/find-by-id store id)]
     (if msg
-      (response/ok (wire.out.messages/->single-response msg))
+      (response/ok (wire.out.messages/->single-response (enrich-with-available-responses msg)))
       (response/not-found (str "Message not found: " id)))))
 
 (s/defn handle-respond [request]

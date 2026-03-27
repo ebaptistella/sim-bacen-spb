@@ -1,7 +1,7 @@
 (ns com.github.ebaptistella.controllers.str.str0005
   "STR0005: TED por não-correntista. Fluxo2: R1 + R2 + E."
   (:require [com.github.ebaptistella.components.logger :as logger]
-            [com.github.ebaptistella.controllers.str.str :refer [process! respond!]]
+            [com.github.ebaptistella.controllers.str.str :refer [available-responses process! respond!]]
             [com.github.ebaptistella.infrastructure.mq.producer :as mq.producer]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.logic.str.parser :as parser]
@@ -9,6 +9,8 @@
   (:import [java.time Instant]))
 
 (def ^:private accepted-response-types #{:STR0005R1 :STR0005R2 :STR0005E})
+
+(defmethod available-responses :STR0005 [_msg] [:STR0005R1 :STR0005R2 :STR0005E])
 
 (defmethod process! :STR0005
   [msg {:keys [store logger]}]

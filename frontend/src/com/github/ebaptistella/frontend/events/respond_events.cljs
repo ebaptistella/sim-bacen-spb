@@ -97,7 +97,7 @@
          msg           (some #(when (= (:id %) msg-id) %)
                              (get-in db [:messages :list]))
          body          (cond-> {:response-type (build-response-type (:type msg) response-type)}
-                         (= response-type :reject)   (assoc :params {:motivo-rejeicao motivo})
+                         (= response-type :reject)   (assoc :params {"MotivoRejeicao" motivo})
                          (= response-type :accept)   (assoc :params {})
                          (= response-type :send-r2)  (assoc :params {}))]
      {:db (assoc-in db [:respond :submitting?] true)

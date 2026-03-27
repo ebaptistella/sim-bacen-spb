@@ -2,12 +2,26 @@
   (:require [clojure.string :as str]
             [re-frame.core :as rf]))
 
-(defn- option-card [type label description selected?]
+(defn- response-type->label [rt]
+  (condp re-find rt
+    #"R1$" [(str rt " — Aceitar")        "Envia R1 (LQDADO) para a IF debitada"]
+    #"R2$" [(str rt " — Notificar IF-Creditada") "Envia R2 com notificação para a IF creditada"]
+    #"E$"  [(str rt " — Rejeitar")       "Envia rejeição com motivo para a IF debitada"]
+    [(str rt) ""]))
+
+(defn- response-type->dispatch-key [rt]
+  (condp re-find rt
+    #"R1$" :accept
+    #"R2$" :send-r2
+    #"E$"  :reject
+    (keyword rt)))
+
+(defn- option-card [dispatch-key label description selected?]
   [:div {:class    (str "p-4 border-2 rounded-lg cursor-pointer transition-all "
                         (if selected?
                           "border-indigo-500 bg-indigo-50"
                           "border-gray-200 hover:border-gray-300"))
-         :on-click #(rf/dispatch [:respond/set-response-type type])}
+         :on-click #(rf/dispatch [:respond/set-response-type dispatch-key])}
    [:div.flex.items-center.gap-3
     [:div {:class (str "w-4 h-4 rounded-full border-2 flex items-center justify-center "
                        (if selected?
@@ -24,6 +38,7 @@
         response-type @(rf/subscribe [:respond/response-type])
         motivo        @(rf/subscribe [:respond/motivo])
         msg           @(rf/subscribe [:messages/selected-message])
+        avail         (:available-responses msg)
         reject?       (= response-type :reject)
         motivo-valid? (and motivo (not (str/blank? motivo)))
         can-confirm?  (and response-type
@@ -36,14 +51,11 @@
         [:h3.text-lg.font-semibold.text-gray-800.mb-4
          "Responder " (:type msg)]
         [:div.space-y-3.mb-4
-         [option-card :accept
-          (str (:type msg) "R1 — Aceitar")
-          "Envia R1 (LQDADO) para a IF debitada"
-          (= response-type :accept)]
-         [option-card :reject
-          (str (:type msg) "E — Rejeitar")
-          "Envia rejeição com motivo para a IF debitada"
-          (= response-type :reject)]]
+         (for [rt avail
+               :let [dispatch-key (response-type->dispatch-key rt)
+                     [label desc] (response-type->label rt)]]
+           ^{:key rt}
+           [option-card dispatch-key label desc (= response-type dispatch-key)])]
         (when reject?
           [:div.mb-4
            [:label.block.text-sm.font-medium.text-gray-700.mb-1
