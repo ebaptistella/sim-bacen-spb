@@ -6,9 +6,9 @@
   (:import [java.time Instant]))
 
 (def ^:private field-ordering
-  {"STR0005R1" [:CodMsg :NumCtrlIF :ISPBIFDebtd :NumCtrlSTR :SitLancSTR :DtHrSit :DtMovto]
-   "STR0005R2" [:CodMsg :ISPBIFDebtd :ISPBIFCredtd :VlrLanc :FinlddCli :NumCtrlSTR :DtHrBC]
-   "STR0005E"  [:CodMsg :NumCtrlIF :ISPBIFDebtd :MotivoRejeicao]})
+  {:STR0005R1 [:CodMsg :NumCtrlIF :ISPBIFDebtd :NumCtrlSTR :SitLancSTR :DtHrSit :DtMovto]
+   :STR0005R2 [:CodMsg :ISPBIFDebtd :ISPBIFCredtd :VlrLanc :FinlddCli :NumCtrlSTR :DtHrBC]
+   :STR0005E  [:CodMsg :NumCtrlIF :ISPBIFDebtd :MotivoRejeicao]})
 
 (s/def InboundMessage
   {:num-ctrl-if    (s/maybe s/Str)
@@ -63,11 +63,12 @@
        :MotivoRejeicao (str motivo)})))
 
 (s/defn response->xml :- s/Str
-  [response-type :- s/Str
+  [response-type :- s/Keyword
    fields-map :- {s/Keyword s/Any}]
   (let [ordered (get field-ordering response-type)
+        tag     (name response-type)
         parts   (for [k ordered
                       :let [v (get fields-map k)]
                       :when (some? v)]
                   (str "<" (name k) ">" (xml/escape (if (keyword? v) (name v) v)) "</" (name k) ">"))]
-    (str "<" response-type ">" (apply str parts) "</" response-type ">")))
+    (str "<" tag ">" (apply str parts) "</" tag ">")))

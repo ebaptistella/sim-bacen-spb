@@ -9,9 +9,9 @@
             [schema.core :as s])
   (:import [java.time Instant]))
 
-(def ^:private accepted-response-types #{"STR0011R1" "STR0011E"})
+(def ^:private accepted-response-types #{:STR0011R1 :STR0011E})
 
-(defmethod process! "STR0011"
+(defmethod process! :STR0011
   [msg {:keys [store logger]}]
   ;; Logic Sandwich: query first → effect
   (logger/log-call logger :info "[STR] STR0011 received | id=%s num-ctrl-str-or=%s"
@@ -20,7 +20,7 @@
         entry    (assoc msg :original-msg-id (:id original))]
     (store.messages/save! store entry)))
 
-(defmethod respond! "STR0011"
+(defmethod respond! :STR0011
   [msg {:keys [store mq-cfg]} {:keys [response-type params]}]
   (cond
     (= :responded (:status msg))
@@ -31,8 +31,8 @@
 
     :else
     (let [fields (case response-type
-                   "STR0011R1" (logic.str0011/r1-response msg params)
-                   "STR0011E"  (logic.str0011/rejection-response msg params))]
+                   :STR0011R1 (logic.str0011/r1-response msg params)
+                   :STR0011E  (logic.str0011/rejection-response msg params))]
       (if (= :missing-motivo (:error fields))
         fields
         (let [xml        (logic.str0011/response->xml response-type fields)

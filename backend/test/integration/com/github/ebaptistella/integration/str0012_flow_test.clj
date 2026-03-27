@@ -36,7 +36,7 @@
   "A completed STR0008 that will match dt-movto of today."
   [id received-at]
   {:id             id
-   :type           "STR0008"
+   :type           :STR0008
    :status         :responded
    :direction      :inbound
    :num-ctrl-if    "NC-8-001"

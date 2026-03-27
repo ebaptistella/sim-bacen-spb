@@ -28,7 +28,7 @@
 (defn- sample-str0006-msg
   [id]
   {:id             id
-   :type           "STR0006"
+   :type           :STR0006
    :status         :pending
    :direction      :inbound
    :num-ctrl-if    "NC-006"
@@ -69,7 +69,7 @@
                                             {:response-type "STR0006R1"})))]
     (match? 200 (sf/invoke #(:status resp)))
     (match? :responded (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? "STR0006R1" (sf/invoke #(-> (store.messages/find-by-id store id) :response :type)))
+    (match? :STR0006R1 (sf/invoke #(-> (store.messages/find-by-id store id) :response :type)))
     (match? some? (sf/invoke #(-> (store.messages/find-by-id store id) :response :sent-at)))
     (match? "QR.REQ.99999999.00000000.01" (sf/invoke #(:queue @capture)))
     (match? true (sf/invoke #(str/includes? (:xml @capture) "STR0006R1")))
