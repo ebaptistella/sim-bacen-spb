@@ -205,6 +205,23 @@
     (match? :pending (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
     (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :responses)))))
 
+(defflow str0010-r2-already-sent
+  {:init flow-init}
+  (flow "POST STR0010R2 twice — 409 on second attempt"
+    [store    (sf/get-state :store)
+     base-url (sf/get-state :base-url)
+     id       (sf/invoke #(str (random-uuid)))
+     _        (sf/invoke #(store.messages/save! store (assoc (sample-str0010-msg id) :id id)))
+     _        (sf/invoke #(with-redefs [mq.producer/send-message! (fn [_ _ _] nil)]
+                            (http-post-json base-url (str "/api/v1/messages/" id "/respond")
+                                            {:response-type "STR0010R1"})))
+     _        (sf/invoke #(with-redefs [mq.producer/send-message! (fn [_ _ _] nil)]
+                            (http-post-json base-url (str "/api/v1/messages/" id "/respond")
+                                            {:response-type "STR0010R2"})))
+     resp     (sf/invoke #(http-post-json base-url (str "/api/v1/messages/" id "/respond")
+                                          {:response-type "STR0010R2"}))]
+    (match? 409 (sf/invoke #(:status resp)))))
+
 (defflow str0010-get-available-responses-pending
   {:init flow-init}
   (flow "GET /api/v1/messages/:id — STR0010 pending returns R1, R2, E"

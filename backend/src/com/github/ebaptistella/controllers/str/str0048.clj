@@ -15,6 +15,7 @@
   (let [responses (:responses msg)]
     (cond
       (some #(= :STR0048R3 (:type %)) responses) []
+      (some #(= :STR0048E  (:type %)) responses) []
       (some #(= :STR0048R2 (:type %)) responses) [:STR0048R3]
       (some #(= :STR0048R1 (:type %)) responses) [:STR0048R2]
       :else                                       [:STR0048R1 :STR0048R2 :STR0048E])))
@@ -36,6 +37,9 @@
       {:error :invalid-response-type}
 
       (and (= :STR0048R1 response-type) r1-sent?)
+      {:error :already-responded}
+
+      (and (= :STR0048R1 response-type) (store.messages/response-sent? msg :STR0048E))
       {:error :already-responded}
 
       (and (#{:STR0048R2 :STR0048R3} response-type) (not r1-sent?))

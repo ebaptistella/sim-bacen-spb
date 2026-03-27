@@ -21,5 +21,4 @@
      :body          body
      :received-at   (str (Instant/now))
      :status        :auto-responded
-     :direction     :inbound
-     :response      nil}))
+     :direction     :inbound}))

@@ -19,5 +19,4 @@
      :body            body
      :received-at     (str (Instant/now))
      :status          :pending
-     :direction       :inbound
-     :response        nil}))
+     :direction       :inbound}))

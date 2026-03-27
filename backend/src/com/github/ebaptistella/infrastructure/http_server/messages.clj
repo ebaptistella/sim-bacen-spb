@@ -132,7 +132,6 @@
                :num-ctrl-if  "CTL20260323-TEST"
                :body         "<STR0008><CodMsg>STR0008</CodMsg><NumCtrlIF>CTL20260323-TEST</NumCtrlIF><ISPBIFDebtd>00000000</ISPBIFDebtd><ISPBIFCredtd>99999999</ISPBIFCredtd><VlrLanc>5000.00</VlrLanc><FinlddCli>0001</FinlddCli><DtMovto>20260323</DtMovto></STR0008>"
                :received-at  (str (java.time.Instant/now))
-               :response     nil
                :vlr-lanc     "5000.00"
                :ispb-if-debtd "00000000"
                :ispb-if-credtd "99999999"

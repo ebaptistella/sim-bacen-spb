@@ -23,8 +23,7 @@
    :cod-dev-transf      (:cod-dev-transf msg)
    :ispb-if-devedora    (:ispb-if-devedora msg)
    :responses           (mapv #(update % :type name) (:responses msg))
-   :available-responses (when-let [avail (seq (:available-responses msg))]
-                          (mapv name avail))})
+   :available-responses (mapv name (or (:available-responses msg) []))})
 
 (defn ->list-response
   [{:keys [messages total limit offset]}]
