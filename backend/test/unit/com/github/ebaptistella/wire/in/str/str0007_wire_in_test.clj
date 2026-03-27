@@ -24,7 +24,7 @@
 (deftest str0007-wire-in-type-test
   (testing ":type is STR0007"
     (let [result (parse-inbound raw-input)]
-      (is (= "STR0007" (:type result))))))
+      (is (= :STR0007 (:type result))))))
 
 (deftest str0007-wire-in-status-test
   (testing ":status is :pending"

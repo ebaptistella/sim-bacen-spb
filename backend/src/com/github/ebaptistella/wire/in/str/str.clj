@@ -19,15 +19,15 @@
   "Parses a raw MQ message into a STR domain model map.
    Input:  {:queue-name :message-id :body<xml>}
    Output: domain map or nil if unparseable.
-   Dispatch: CodMsg extracted from XML body."
+   Dispatch: CodMsg extracted from XML body, coerced to keyword."
   (fn [{:keys [body]}]
-    (extract-cod-msg body)))
+    (some-> body extract-cod-msg keyword)))
 
 (defmethod parse-inbound :default
   [{:keys [queue-name message-id body]}]
   (let [cod-msg (extract-cod-msg body)]
     {:id          (str (UUID/randomUUID))
-     :type        (or cod-msg :unknown)
+     :type        (or (some-> cod-msg keyword) :unknown)
      :num-ctrl-if nil
      :participant (parser/sender-ispb-from-queue queue-name)
      :queue-name  queue-name
