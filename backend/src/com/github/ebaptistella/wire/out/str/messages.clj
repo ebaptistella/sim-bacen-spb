@@ -19,8 +19,10 @@
    :finldd-if           (:finldd-if msg)
    :dt-movto            (:dt-movto msg)
    :body                (:body msg)
-   :response            (:response msg)
-   :r2-response         (:r2-response msg)
+   :num-ctrl-str-or     (:num-ctrl-str-or msg)
+   :cod-dev-transf      (:cod-dev-transf msg)
+   :ispb-if-devedora    (:ispb-if-devedora msg)
+   :responses           (mapv #(update % :type name) (:responses msg))
    :available-responses (when-let [avail (seq (:available-responses msg))]
                           (mapv name avail))})
 

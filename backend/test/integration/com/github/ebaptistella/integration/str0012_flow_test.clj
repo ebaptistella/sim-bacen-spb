@@ -29,8 +29,7 @@
                        "<ISPBIFDebtd>00000000</ISPBIFDebtd>"
                        "<DtMovto>" dt-movto "</DtMovto>"
                        "</STR0012>")
-   :received-at   "2099-12-31T23:59:59Z"
-   :response      nil})
+   :received-at   "2099-12-31T23:59:59Z"})
 
 (defn- sample-str0008-responded-msg
   "A completed STR0008 that will match dt-movto of today."
@@ -50,10 +49,10 @@
    :message-id     "mq-8-test"
    :body           "<CodMsg>STR0008</CodMsg>"
    :received-at    received-at
-   :response       {:type        :STR0008R1
-                    :num-ctrl-str "ABCD1234567890ABCD12"
-                    :body        "<STR0008R1/>"
-                    :sent-at     received-at}})
+   :responses      [{:type         :STR0008R1
+                     :num-ctrl-str "ABCD1234567890ABCD12"
+                     :body         "<STR0008R1/>"
+                     :sent-at      received-at}]})
 
 ;; ---- flow helpers ----------------------------------------------------------
 
@@ -99,7 +98,7 @@
     (match? :auto-responded
             (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
     (match? :STR0012R1
-            (sf/invoke #(-> (store.messages/find-by-id store id) :response :type)))))
+            (sf/invoke #(-> (store.messages/find-by-id store id) :responses first :type)))))
 
 (defflow str0012-store-with-lancamento-returns-one
   {:init flow-init}
@@ -120,7 +119,7 @@
     (match? :auto-responded
             (sf/invoke #(-> (store.messages/find-by-id store id-12) :status)))
     (match? :STR0012R1
-            (sf/invoke #(-> (store.messages/find-by-id store id-12) :response :type)))))
+            (sf/invoke #(-> (store.messages/find-by-id store id-12) :responses first :type)))))
 
 (defflow str0012-r1-xml-contains-num-ctrl-str
   {:init flow-init}
@@ -153,4 +152,4 @@
                          (catch Exception _ nil)))]
     ;; message was saved (default process!) but response is nil
     (match? nil
-            (sf/invoke #(-> (store.messages/find-by-id store id) :response)))))
+            (sf/invoke #(-> (store.messages/find-by-id store id) :responses)))))

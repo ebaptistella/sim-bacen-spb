@@ -53,8 +53,7 @@
    :queue-name     "QL.REQ.00000000.99999999.01"
    :message-id     "mq-test-0008"
    :body           "<CodMsg>STR0008</CodMsg>"
-   :received-at    "2025-01-01T00:00:00Z"
-   :response       nil})
+   :received-at    "2025-01-01T00:00:00Z"})
 
 (defn- sample-str0011-msg
   [id]
@@ -70,8 +69,7 @@
    :queue-name      "QL.REQ.00000000.99999999.01"
    :message-id      "mq-test-0011"
    :body            "<STR0011><CodMsg>STR0011</CodMsg></STR0011>"
-   :received-at     "2025-01-01T00:00:00Z"
-   :response        nil})
+   :received-at     "2025-01-01T00:00:00Z"})
 
 (defn- flow-init
   []
@@ -98,8 +96,8 @@
                                             {:response-type "STR0011R1"})))]
     (match? 200 (sf/invoke #(:status resp)))
     (match? :responded (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? :STR0011R1 (sf/invoke #(-> (store.messages/find-by-id store id) :response :type)))
-    (match? some? (sf/invoke #(-> (store.messages/find-by-id store id) :response :sent-at)))
+    (match? :STR0011R1 (sf/invoke #(-> (store.messages/find-by-id store id) :responses first :type)))
+    (match? some? (sf/invoke #(-> (store.messages/find-by-id store id) :responses first :sent-at)))
     (match? "QR.REQ.99999999.00000000.01" (sf/invoke #(:queue @capture)))
     (match? true (sf/invoke #(str/includes? (:xml @capture) "STR0011R1")))
     (match? true (sf/invoke #(str/includes? (:xml @capture) "CANCELADO")))))
@@ -133,7 +131,7 @@
                                           {:response-type "STR0011E"}))]
     (match? 400 (sf/invoke #(:status resp)))
     (match? :pending (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :response)))))
+    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :responses)))))
 
 (defflow str0011-respond-e-com-motivo
   {:init flow-init}
@@ -161,9 +159,9 @@
      _        (sf/invoke #(store.messages/save! store
                                                  (-> (sample-str0011-msg id)
                                                      (assoc :status :responded
-                                                            :response {:type    "STR0011R1"
-                                                                       :body    "<x/>"
-                                                                       :sent-at "t"}))))
+                                                            :responses [{:type    :STR0011R1
+                                                                         :body    "<x/>"
+                                                                         :sent-at "t"}]))))
      before   (sf/invoke #(store.messages/find-by-id store id))
      resp     (sf/invoke #(http-post-json base-url (str "/api/v1/messages/" id "/respond")
                                           {:response-type "STR0011R1"}))
@@ -196,4 +194,4 @@
                                             {:response-type "STR0011R1"})))]
     (match? 500 (sf/invoke #(:status resp)))
     (match? :pending (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :response)))))
+    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :responses)))))

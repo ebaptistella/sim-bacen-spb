@@ -33,11 +33,12 @@
 (defn- persist-and-respond! [store msg r1-xml r1-type]
   (store.messages/save! store msg)
   (store.messages/update-message! store (:id msg)
-                                  #(assoc %
-                                          :status :auto-responded
-                                          :response {:type    r1-type
-                                                     :body    r1-xml
-                                                     :sent-at (str (Instant/now))})))
+                                  #(-> %
+                                       (assoc :status :auto-responded)
+                                       (update :responses (fnil conj [])
+                                               {:type    r1-type
+                                                :body    r1-xml
+                                                :sent-at (str (Instant/now))}))))
 
 ;; ---- STR0001 handler -------------------------------------------------------
 

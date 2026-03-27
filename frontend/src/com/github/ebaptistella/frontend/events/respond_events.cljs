@@ -86,7 +86,8 @@
   (case response-type
     :accept   (str msg-type "R1")
     :reject   (str msg-type "E")
-    :send-r2  (str msg-type "R2")))
+    :send-r2  (str msg-type "R2")
+    :send-r3  (str msg-type "R3")))
 
 (rf/reg-event-fx
  :respond/submit

@@ -6,8 +6,12 @@
             [com.github.ebaptistella.components.store :as components.store]
             [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.controllers.str.str0008]
+            [com.github.ebaptistella.controllers.str.str0010]
+            [com.github.ebaptistella.controllers.str.str0048]
             [com.github.ebaptistella.handlers.http-server :as handlers.http-server]
             [com.github.ebaptistella.wire.in.str.str0008]
+            [com.github.ebaptistella.wire.in.str.str0010]
+            [com.github.ebaptistella.wire.in.str.str0048]
             [com.stuartsierra.component :as component]
             [schema.core :as s]))
 

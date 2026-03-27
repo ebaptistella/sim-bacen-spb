@@ -41,8 +41,7 @@
    :queue-name     "QL.REQ.00000000.99999999.01"
    :message-id     "mq-test-0007"
    :body           "<STR0007><CodMsg>STR0007</CodMsg></STR0007>"
-   :received-at    "2025-01-01T00:00:00Z"
-   :response       nil})
+   :received-at    "2025-01-01T00:00:00Z"})
 
 (defn- flow-init
   []
@@ -69,8 +68,8 @@
                                             {:response-type "STR0007R1"})))]
     (match? 200 (sf/invoke #(:status resp)))
     (match? :responded (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? :STR0007R1 (sf/invoke #(-> (store.messages/find-by-id store id) :response :type)))
-    (match? some? (sf/invoke #(-> (store.messages/find-by-id store id) :response :sent-at)))
+    (match? :STR0007R1 (sf/invoke #(-> (store.messages/find-by-id store id) :responses first :type)))
+    (match? some? (sf/invoke #(-> (store.messages/find-by-id store id) :responses first :sent-at)))
     (match? "QR.REQ.99999999.00000000.01" (sf/invoke #(:queue @capture)))
     (match? true (sf/invoke #(str/includes? (:xml @capture) "STR0007R1")))
     (match? true (sf/invoke #(str/includes? (:xml @capture) "LQDADO")))))
@@ -126,7 +125,7 @@
                                           {:response-type "STR0007R2"}))]
     (match? 422 (sf/invoke #(:status resp)))
     (match? :pending (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :r2-response)))))
+    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :responses)))))
 
 (defflow str0007-mq-failure
   {:init flow-init}
@@ -141,4 +140,4 @@
                                             {:response-type "STR0007R1"})))]
     (match? 500 (sf/invoke #(:status resp)))
     (match? :pending (sf/invoke #(-> (store.messages/find-by-id store id) :status)))
-    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :response)))))
+    (match? nil (sf/invoke #(-> (store.messages/find-by-id store id) :responses)))))

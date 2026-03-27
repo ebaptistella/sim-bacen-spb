@@ -27,7 +27,7 @@
     (not (accepted-response-types response-type))
     {:error :invalid-response-type}
 
-    (and (= :responded (:status msg)) (= :STR0008R2 response-type) (:r2-response msg))
+    (and (= :responded (:status msg)) (= :STR0008R2 response-type) (store.messages/response-sent? msg :STR0008R2))
     {:error :r2-already-sent}
 
     (and (= :pending (:status msg)) (= :STR0008R2 response-type))
@@ -36,7 +36,7 @@
     :else
     (let [p      (cond-> (or params {})
                    (= :STR0008R2 response-type)
-                   (assoc :NumCtrlSTR (get-in msg [:response :num-ctrl-str])))
+                   (assoc :NumCtrlSTR (-> msg :responses first :num-ctrl-str)))
           fields (case response-type
                    :STR0008R1 (logic.str0008/r1-response msg p)
                    :STR0008R2 (logic.str0008/r2-response msg p)
@@ -55,13 +55,16 @@
           (mq.producer/send-message! mq-cfg queue-name xml)
           (if (= :STR0008R2 response-type)
             (store.messages/update-message! store (:id msg)
-                                            #(assoc % :r2-response {:type response-type
-                                                                     :body xml
-                                                                     :sent-at (str (Instant/now))}))
+                                            #(update % :responses (fnil conj [])
+                                                     {:type    response-type
+                                                      :body    xml
+                                                      :sent-at (str (Instant/now))}))
             (store.messages/update-message! store (:id msg)
-                                            #(assoc % :status :responded
-                                                      :response {:type         response-type
-                                                                 :body         xml
-                                                                 :sent-at      (str (Instant/now))
-                                                                 :num-ctrl-str (:NumCtrlSTR fields)})))
+                                            #(-> %
+                                                 (assoc :status :responded)
+                                                 (update :responses (fnil conj [])
+                                                         {:type         response-type
+                                                          :body         xml
+                                                          :sent-at      (str (Instant/now))
+                                                          :num-ctrl-str (:NumCtrlSTR fields)}))))
           {:ok true})))))

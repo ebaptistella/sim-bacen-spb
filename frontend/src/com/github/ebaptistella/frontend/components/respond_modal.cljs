@@ -4,15 +4,17 @@
 
 (defn- response-type->label [rt]
   (condp re-find rt
-    #"R1$" [(str rt " — Aceitar")        "Envia R1 (LQDADO) para a IF debitada"]
+    #"R1$" [(str rt " — Aceitar")             "Envia R1 (LQDADO) para a IF debitada"]
     #"R2$" [(str rt " — Notificar IF-Creditada") "Envia R2 com notificação para a IF creditada"]
-    #"E$"  [(str rt " — Rejeitar")       "Envia rejeição com motivo para a IF debitada"]
+    #"R3$" [(str rt " — Notificar IF-Devedora")  "Envia R3 para a IF devedora"]
+    #"E$"  [(str rt " — Rejeitar")            "Envia rejeição com motivo para a IF debitada"]
     [(str rt) ""]))
 
 (defn- response-type->dispatch-key [rt]
   (condp re-find rt
     #"R1$" :accept
     #"R2$" :send-r2
+    #"R3$" :send-r3
     #"E$"  :reject
     (keyword rt)))
 

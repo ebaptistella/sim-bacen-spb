@@ -41,8 +41,10 @@
               queue-name (parser/r1-outbound-queue (:queue-name msg))]
           (mq.producer/send-message! mq-cfg queue-name xml)
           (store.messages/update-message! store (:id msg)
-                                          #(assoc % :status :responded
-                                                    :response {:type    response-type
-                                                               :body    xml
-                                                               :sent-at (str (Instant/now))}))
+                                          #(-> %
+                                               (assoc :status :responded)
+                                               (update :responses (fnil conj [])
+                                                       {:type    response-type
+                                                        :body    xml
+                                                        :sent-at (str (Instant/now))})))
           {:ok true})))))

@@ -1,0 +1,91 @@
+(ns com.github.ebaptistella.logic.str.str0048
+  "Pure STR0048 logic: devolução de portabilidade indevida. R1, R2, R3 (IF-Devedora), E (rejeição)."
+  (:require [clojure.string :as str]
+            [com.github.ebaptistella.logic.str.xml :as xml]
+            [schema.core :as s])
+  (:import [java.time Instant]))
+
+(def ^:private field-ordering
+  {:STR0048R1 [:CodMsg :NumCtrlIF :ISPBIFDebtd :NumCtrlSTR :SitLancSTR :DtHrSit :DtMovto]
+   :STR0048R2 [:CodMsg :ISPBIFDebtd :ISPBIFCredtd :VlrLanc :CodDevTransf :NumCtrlSTROr :NumCtrlSTR :DtHrBC]
+   :STR0048R3 [:CodMsg :ISPBIFDevedora :NumCtrlSTR :DtHrBC]
+   :STR0048E  [:CodMsg :NumCtrlIF :ISPBIFDebtd :MotivoRejeicao]})
+
+(s/def InboundMessage
+  {:num-ctrl-if      (s/maybe s/Str)
+   :num-ctrl-str-or  (s/maybe s/Str)
+   :ispb-if-debtd    (s/maybe s/Str)
+   :ispb-if-credtd   (s/maybe s/Str)
+   :vlr-lanc         (s/maybe s/Str)
+   :cod-dev-transf   (s/maybe s/Str)
+   :dt-movto         (s/maybe s/Str)
+   (s/optional-key :ispb-if-devedora) (s/maybe s/Str)
+   s/Keyword                          s/Any})
+
+(s/def OverrideParams {s/Keyword s/Any})
+
+(s/defn r1-response :- {s/Keyword s/Any}
+  [msg :- InboundMessage
+   params :- (s/maybe OverrideParams)]
+  (let [p   (or params {})
+        now (Instant/now)
+        sit (or (:SitLancSTR p) (:sit-lanc-str p) "LQDADO")]
+    {:CodMsg      :STR0048R1
+     :NumCtrlIF   (:num-ctrl-if msg)
+     :ISPBIFDebtd (:ispb-if-debtd msg)
+     :NumCtrlSTR  (xml/new-control-number)
+     :SitLancSTR  sit
+     :DtHrSit     (xml/format-datetime now)
+     :DtMovto     (or (:dt-movto msg) (xml/format-date now))}))
+
+(s/defn r2-response :- {s/Keyword s/Any}
+  [msg :- InboundMessage
+   params :- (s/maybe OverrideParams)]
+  (let [now (Instant/now)
+        p   (or params {})]
+    {:CodMsg       :STR0048R2
+     :ISPBIFDebtd  (:ispb-if-debtd msg)
+     :ISPBIFCredtd (:ispb-if-credtd msg)
+     :VlrLanc      (:vlr-lanc msg)
+     :CodDevTransf (:cod-dev-transf msg)
+     :NumCtrlSTROr (:num-ctrl-str-or msg)
+     :NumCtrlSTR   (or (:NumCtrlSTR p) (xml/new-control-number))
+     :DtHrBC       (xml/format-datetime now)}))
+
+(s/defn r3-response :- {s/Keyword s/Any}
+  "Builds R3 response targeting ISPBIFDevedora.
+   Uses ispb-if-devedora from msg; falls back to ISPBIFDevedora in params."
+  [msg :- InboundMessage
+   params :- (s/maybe OverrideParams)]
+  (let [now          (Instant/now)
+        p            (or params {})
+        ispb-devedora (or (:ispb-if-devedora msg) (:ISPBIFDevedora p))]
+    {:CodMsg          :STR0048R3
+     :ISPBIFDevedora  ispb-devedora
+     :NumCtrlSTR      (or (:NumCtrlSTR p) (xml/new-control-number))
+     :DtHrBC          (xml/format-datetime now)}))
+
+(s/defn rejection-response :- (s/conditional
+                                 #(contains? % :error) {:error (s/eq :missing-motivo)}
+                                 :else {s/Keyword s/Any})
+  [msg :- InboundMessage
+   params :- (s/maybe OverrideParams)]
+  (let [p      (or params {})
+        motivo (or (:MotivoRejeicao p) (:motivo-rejeicao p))]
+    (if (or (nil? motivo) (str/blank? (str motivo)))
+      {:error :missing-motivo}
+      {:CodMsg         :STR0048E
+       :NumCtrlIF      (:num-ctrl-if msg)
+       :ISPBIFDebtd    (:ispb-if-debtd msg)
+       :MotivoRejeicao (str motivo)})))
+
+(s/defn response->xml :- s/Str
+  [response-type :- s/Keyword
+   fields-map :- {s/Keyword s/Any}]
+  (let [ordered (get field-ordering response-type)
+        tag     (name response-type)
+        parts   (for [k ordered
+                      :let [v (get fields-map k)]
+                      :when (some? v)]
+                  (str "<" (name k) ">" (xml/escape (if (keyword? v) (name v) v)) "</" (name k) ">"))]
+    (str "<" tag ">" (apply str parts) "</" tag ">")))

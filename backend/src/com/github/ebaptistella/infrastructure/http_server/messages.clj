@@ -57,6 +57,12 @@
               (= result {:error :r2-requires-r1})
               (response/unprocessable-entity "R2 requires R1 to be sent first")
 
+              (= result {:error :r3-requires-r2})
+              (response/unprocessable-entity "R3 requires R2 to be sent first")
+
+              (= result {:error :r3-already-sent})
+              (response/conflict "R3 already sent for this message")
+
               (= result {:error :missing-motivo})
               (response/bad-request "MotivoRejeicao is required")
 

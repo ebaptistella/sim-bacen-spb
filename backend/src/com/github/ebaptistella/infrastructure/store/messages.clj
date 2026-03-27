@@ -48,12 +48,27 @@
                     (= msg-date target-date))))
               all))))
 
+(defn first-response
+  "Returns the first response in :responses [], analogous to the old :response field."
+  [msg]
+  (first (:responses msg)))
+
+(defn responses-of-type
+  "Returns seq of responses matching rtype keyword from :responses []."
+  [msg rtype]
+  (filter #(= (:type %) rtype) (:responses msg)))
+
+(defn response-sent?
+  "Returns true if a response of the given type keyword was already sent."
+  [msg rtype]
+  (boolean (some #(= (:type %) rtype) (:responses msg))))
+
 (defn get-by-num-ctrl-str
-  "Returns the message whose response contains the given NumCtrlSTR."
+  "Returns the message whose first response contains the given NumCtrlSTR."
   [store-component num-ctrl-str]
   (when num-ctrl-str
     (->> (:messages @(:store store-component))
-         (filter #(= (get-in % [:response :num-ctrl-str]) num-ctrl-str))
+         (filter #(= (-> % :responses first :num-ctrl-str) num-ctrl-str))
          first)))
 
 (defn find-by-num-ctrl-if

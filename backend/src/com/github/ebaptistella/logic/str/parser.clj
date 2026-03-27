@@ -114,6 +114,29 @@
     "STR0008" "TED"
     "OTR"))
 
+(s/defn parse-str0010 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0010 (devolução de TED) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if     (xml-value body "NumCtrlIF")
+   :num-ctrl-str-or (xml-value body "NumCtrlSTROr")
+   :ispb-if-debtd   (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd  (xml-value body "ISPBIFCredtd")
+   :vlr-lanc        (xml-value body "VlrLanc")
+   :cod-dev-transf  (xml-value body "CodDevTransf")
+   :dt-movto        (xml-value body "DtMovto")})
+
+(s/defn parse-str0048 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0048 (devolução de portabilidade) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if      (xml-value body "NumCtrlIF")
+   :num-ctrl-str-or  (xml-value body "NumCtrlSTROr")
+   :ispb-if-debtd    (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd   (xml-value body "ISPBIFCredtd")
+   :vlr-lanc         (xml-value body "VlrLanc")
+   :cod-dev-transf   (xml-value body "CodDevTransf")
+   :dt-movto         (xml-value body "DtMovto")
+   :ispb-if-devedora (xml-value body "ISPBIFDevedora")})
+
 (s/defn parse-str0007 :- {s/Keyword (s/maybe s/Str)}
   "Extracts STR0007 (TED IF→cliente) relevant fields from XML body.
    Uses FinlddIF (not FinlddCli) as STR0007 is an IF-initiated transfer."
