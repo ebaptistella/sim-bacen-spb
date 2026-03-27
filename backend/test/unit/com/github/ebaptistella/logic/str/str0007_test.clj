@@ -62,7 +62,7 @@
       (is (nil? (:FinlddCli fields)))))
   (testing "XML contains FinlddIF and does not contain FinlddCli"
     (let [fields (str0007/r2-response base-msg nil)
-          xml    (str0007/response->xml "STR0007R2" fields)]
+          xml    (str0007/response->xml :STR0007R2 fields)]
       (is (str/includes? xml "<FinlddIF>00001</FinlddIF>"))
       (is (not (str/includes? xml "<FinlddCli>")))))
   (testing "NumCtrlSTR is present with 20 alphanumeric chars"
@@ -101,25 +101,25 @@
       (is (= "00000000" (:ISPBIFDebtd fields)))))
   (testing "valid MotivoRejeicao AC09 appears in XML"
     (let [fields (str0007/rejection-response base-msg {:MotivoRejeicao "AC09"})
-          xml    (str0007/response->xml "STR0007E" fields)]
+          xml    (str0007/response->xml :STR0007E fields)]
       (is (str/includes? xml "<MotivoRejeicao>AC09</MotivoRejeicao>")))))
 
 (deftest response-xml-test
   (testing "response->xml STR0007R1 starts and ends with correct tags"
     (let [fields (str0007/r1-response base-msg nil)
-          xml    (str0007/response->xml "STR0007R1" fields)]
+          xml    (str0007/response->xml :STR0007R1 fields)]
       (is (str/starts-with? xml "<STR0007R1>"))
       (is (str/ends-with? xml "</STR0007R1>"))))
   (testing "response->xml STR0007R1 contains CodMsg STR0007R1"
     (let [fields (str0007/r1-response base-msg nil)
-          xml    (str0007/response->xml "STR0007R1" fields)]
+          xml    (str0007/response->xml :STR0007R1 fields)]
       (is (str/includes? xml "<CodMsg>STR0007R1</CodMsg>"))))
   (testing "response->xml STR0007R2 starts and ends with correct tags"
     (let [fields (str0007/r2-response base-msg nil)
-          xml    (str0007/response->xml "STR0007R2" fields)]
+          xml    (str0007/response->xml :STR0007R2 fields)]
       (is (str/starts-with? xml "<STR0007R2>"))
       (is (str/ends-with? xml "</STR0007R2>"))))
   (testing "response->xml STR0007E contains CodMsg STR0007E"
     (let [fields (str0007/rejection-response base-msg {:MotivoRejeicao "AC09"})
-          xml    (str0007/response->xml "STR0007E" fields)]
+          xml    (str0007/response->xml :STR0007E fields)]
       (is (str/includes? xml "<CodMsg>STR0007E</CodMsg>")))))

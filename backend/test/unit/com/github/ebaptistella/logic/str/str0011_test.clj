@@ -32,7 +32,7 @@
       (is (some? (:DtHrSit fields)))
       (is (not (str/blank? (:DtHrSit fields))))))
   (testing "DtMovto is not present in R1 field-ordering"
-    (let [xml (str0011/response->xml "STR0011R1" (str0011/r1-response base-msg nil))]
+    (let [xml (str0011/response->xml :STR0011R1 (str0011/r1-response base-msg nil))]
       (is (not (str/includes? xml "<DtMovto>"))))))
 
 (deftest rejection-response-sem-motivo-test
@@ -49,7 +49,7 @@
 (deftest rejection-response-com-motivo-test
   (testing "valid MotivoRejeicao AC09 appears in XML"
     (let [fields (str0011/rejection-response base-msg {:MotivoRejeicao "AC09"})
-          xml    (str0011/response->xml "STR0011E" fields)]
+          xml    (str0011/response->xml :STR0011E fields)]
       (is (str/includes? xml "<MotivoRejeicao>AC09</MotivoRejeicao>"))))
   (testing "CodMsg is STR0011E"
     (let [fields (str0011/rejection-response base-msg {:MotivoRejeicao "AC09"})]
@@ -64,10 +64,10 @@
 (deftest response-xml-test
   (testing "response->xml STR0011R1 starts and ends with correct tags"
     (let [fields (str0011/r1-response base-msg nil)
-          xml    (str0011/response->xml "STR0011R1" fields)]
+          xml    (str0011/response->xml :STR0011R1 fields)]
       (is (str/starts-with? xml "<STR0011R1>"))
       (is (str/ends-with? xml "</STR0011R1>"))))
   (testing "response->xml STR0011E contains CodMsg STR0011E"
     (let [fields (str0011/rejection-response base-msg {:MotivoRejeicao "AC09"})
-          xml    (str0011/response->xml "STR0011E" fields)]
+          xml    (str0011/response->xml :STR0011E fields)]
       (is (str/includes? xml "<CodMsg>STR0011E</CodMsg>")))))

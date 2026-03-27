@@ -34,7 +34,8 @@
         id      (get-in request [:path-params :id])
         raw     (:json-params request)]
     (try
-      (let [req (s/validate RespondBody raw)
+      (let [req (-> (s/validate RespondBody raw)
+                    (update :response-type keyword))
             msg (store.messages/find-by-id store id)]
         (if (nil? msg)
           (response/not-found (str "Message not found: " id))
@@ -112,7 +113,7 @@
     (response/not-found "Not found")
     (let [store (components/get-component request :store)
         msg   {:id           (str (java.util.UUID/randomUUID))
-               :type         "STR0008"
+               :type         :STR0008
                :status       :pending
                :direction    :inbound
                :participant  "00000000"

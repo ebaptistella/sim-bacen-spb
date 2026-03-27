@@ -66,7 +66,7 @@
   (testing "STR0008E XML with MotivoRejeicao"
     (let [msg  {:num-ctrl-if "IF1" :ispb-if-debtd "22222222"}
           flds (str0008/rejection-response msg {:MotivoRejeicao "AC09"})
-          xml  (str0008/response->xml "STR0008E" flds)]
+          xml  (str0008/response->xml :STR0008E flds)]
       (is (str/includes? xml "<MotivoRejeicao>AC09</MotivoRejeicao>"))
       (is (str/includes? xml "<NumCtrlIF>IF1</NumCtrlIF>"))
       (is (str/includes? xml "<ISPBIFDebtd>22222222</ISPBIFDebtd>")))))

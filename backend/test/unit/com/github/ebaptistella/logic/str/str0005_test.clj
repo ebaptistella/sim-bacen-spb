@@ -46,11 +46,11 @@
       (is (= "STR0005R2" (:CodMsg fields)))))
   (testing "FinlddCli is echoed from msg in XML"
     (let [fields (str0005/r2-response base-msg nil)
-          xml    (str0005/response->xml "STR0005R2" fields)]
+          xml    (str0005/response->xml :STR0005R2 fields)]
       (is (str/includes? xml "<FinlddCli>0001</FinlddCli>"))))
   (testing "FinlddIF is not present in STR0005R2 XML"
     (let [fields (str0005/r2-response base-msg nil)
-          xml    (str0005/response->xml "STR0005R2" fields)]
+          xml    (str0005/response->xml :STR0005R2 fields)]
       (is (not (str/includes? xml "<FinlddIF>")))))
   (testing "ISPBIFCredtd is echoed from msg"
     (let [fields (str0005/r2-response base-msg nil)]
@@ -76,7 +76,7 @@
       (is (= {:error :missing-motivo} result))))
   (testing "valid MotivoRejeicao AC09 appears in XML"
     (let [fields (str0005/rejection-response base-msg {:MotivoRejeicao "AC09"})
-          xml    (str0005/response->xml "STR0005E" fields)]
+          xml    (str0005/response->xml :STR0005E fields)]
       (is (str/includes? xml "<MotivoRejeicao>AC09</MotivoRejeicao>"))))
   (testing "CodMsg is STR0005E when MotivoRejeicao is provided"
     (let [fields (str0005/rejection-response base-msg {:MotivoRejeicao "AC09"})]
