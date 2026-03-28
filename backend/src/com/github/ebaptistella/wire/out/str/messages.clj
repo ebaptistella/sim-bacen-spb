@@ -22,6 +22,11 @@
    :num-ctrl-str-or     (:num-ctrl-str-or msg)
    :cod-dev-transf      (:cod-dev-transf msg)
    :ispb-if-devedora    (:ispb-if-devedora msg)
+   :tp-ct-debtd         (:tp-ct-debtd msg)
+   :tp-ct-credtd        (:tp-ct-credtd msg)
+   :agencia             (:agencia msg)
+   :ct-pgto             (:ct-pgto msg)
+   :hist                (:hist msg)
    :responses           (mapv #(update % :type name) (:responses msg))
    :available-responses (mapv name (or (:available-responses msg) []))})
 

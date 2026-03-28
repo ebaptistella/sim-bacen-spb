@@ -147,3 +147,106 @@
    :vlr-lanc       (xml-value body "VlrLanc")
    :finldd-if      (xml-value body "FinlddIF")
    :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0025 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0025 (TED para depósito judicial) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-cli     (xml-value body "FinlddCli")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")
+   :agencia        (xml-value body "Agencia")
+   :ct-pgto        (xml-value body "CtPgto")
+   :hist           (xml-value body "Hist")})
+
+(s/defn parse-str0034 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0034 (TED envolvendo IF sem Reservas Bancárias) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")})
+
+(s/defn parse-str0037 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0037 (TED envolvendo conta-salário) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-cli     (xml-value body "FinlddCli")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")
+   :agencia        (xml-value body "Agencia")
+   :ct-pgto        (xml-value body "CtPgto")})
+
+(s/defn parse-str0039 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0039 (transferência para portabilidade de crédito PJ / arrendamento mercantil) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")})
+
+(s/defn parse-str0041 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0041 (transferência para consignação em IF de aposentado) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-cli     (xml-value body "FinlddCli")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")
+   :agencia        (xml-value body "Agencia")})
+
+(s/defn parse-str0047 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0047 (transferência para portabilidade de crédito PF) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")})
+
+(s/defn parse-str0051 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0051 (transferência para liberação de recursos judiciais) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-cli     (xml-value body "FinlddCli")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")
+   :hist           (xml-value body "Hist")})
+
+(s/defn parse-str0052 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0052 (transferência para portabilidade Open Finance) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")
+   :tp-ct-debtd    (xml-value body "TpCtDebtd")
+   :tp-ct-credtd   (xml-value body "TpCtCredtd")})

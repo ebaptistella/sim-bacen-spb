@@ -9,8 +9,8 @@
   (cond
     (nil? body) nil
     (string? body) (if (> (count body) max-size) (str (subs body 0 max-size) "... [truncated]") body)
-    (map? body) (let [s (json/generate-string (dissoc body :password :token :secret))]
-                  (if (> (count s) max-size) (str (subs s 0 max-size) "... [truncated]") (dissoc body :password :token :secret)))
+    (map? body) (let [s (json/generate-string (dissoc body :password :token :secret :vlr-lanc :agencia :ct-pgto))]
+                  (if (> (count s) max-size) (str (subs s 0 max-size) "... [truncated]") (dissoc body :password :token :secret :vlr-lanc :agencia :ct-pgto)))
     (instance? java.io.InputStream body) "[InputStream]"
     :else (let [s (str body)] (if (> (count s) max-size) (str (subs s 0 max-size) "... [truncated]") s))))
 
