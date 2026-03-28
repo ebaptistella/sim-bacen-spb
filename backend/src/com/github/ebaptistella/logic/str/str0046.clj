@@ -65,13 +65,13 @@
        :ISPBIFDebtd    (:ispb-if-debtd msg)
        :MotivoRejeicao (str motivo)})))
 
-(s/defn response->xml :- s/Str
+(s/defn response->xml :- (s/maybe s/Str)
   [response-type :- s/Keyword
    fields-map :- {s/Keyword s/Any}]
-  (let [ordered (get field-ordering response-type)
-        tag     (name response-type)
-        parts   (for [k ordered
+  (when-let [ordered (get field-ordering response-type)]
+    (let [tag   (name response-type)
+          parts (for [k ordered
                       :let [v (get fields-map k)]
                       :when (some? v)]
                   (str "<" (name k) ">" (xml/escape (if (keyword? v) (name v) v)) "</" (name k) ">"))]
-    (str "<" tag ">" (apply str parts) "</" tag ">")))
+      (str "<" tag ">" (apply str parts) "</" tag ">"))))

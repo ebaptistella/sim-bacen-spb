@@ -15,8 +15,29 @@
   (:import [java.time Instant]
            [java.util UUID]))
 
-(def ^:private valid-types #{"STR0015" "STR0016" "STR0017" "STR0018" "STR0019" "STR0030" "STR0042" "STR0050"})
 (def ^:private participant-pattern #"[0-9]{8}")
+
+;; Each entry: {:build (fn [params participant cfg] xml) :queue (fn [simulator-ispb participant] queue-name)}
+;; All build fns are normalised to the same arity (params participant cfg).
+(def ^:private handlers
+  {"STR0015" {:build (fn [p _ cfg] (logic.str0015/build-message p cfg))
+              :queue logic.str0015/queue-name}
+   "STR0016" {:build logic.str0016/build-message
+              :queue logic.str0016/queue-name}
+   "STR0017" {:build (fn [p _ cfg] (logic.str0017/build-message p cfg))
+              :queue logic.str0017/queue-name}
+   "STR0018" {:build (fn [p _ cfg] (logic.str0018/build-message p cfg))
+              :queue logic.str0018/queue-name}
+   "STR0019" {:build (fn [p _ cfg] (logic.str0019/build-message p cfg))
+              :queue logic.str0019/queue-name}
+   "STR0030" {:build (fn [p _ cfg] (logic.str0030/build-message p cfg))
+              :queue logic.str0030/queue-name}
+   "STR0042" {:build (fn [p _ cfg] (logic.str0042/build-message p cfg))
+              :queue logic.str0042/queue-name}
+   "STR0050" {:build (fn [p _ cfg] (logic.str0050/build-message p cfg))
+              :queue logic.str0050/queue-name}})
+
+(def ^:private valid-types (set (keys handlers)))
 
 (defn- build-config-map [config-component]
   {:str-horario-abertura   (config.reader/str-horario-abertura config-component)
@@ -41,24 +62,9 @@
     :else
     (let [cfg            (build-config-map config)
           simulator-ispb (:simulator-ispb cfg)
-          xml            (case msg-type
-                           "STR0015" (logic.str0015/build-message params cfg)
-                           "STR0016" (logic.str0016/build-message params participant cfg)
-                           "STR0017" (logic.str0017/build-message params cfg)
-                           "STR0018" (logic.str0018/build-message params cfg)
-                           "STR0019" (logic.str0019/build-message params cfg)
-                           "STR0030" (logic.str0030/build-message params cfg)
-                           "STR0042" (logic.str0042/build-message params cfg)
-                           "STR0050" (logic.str0050/build-message params cfg))
-          queue          (case msg-type
-                           "STR0015" (logic.str0015/queue-name simulator-ispb participant)
-                           "STR0016" (logic.str0016/queue-name simulator-ispb participant)
-                           "STR0017" (logic.str0017/queue-name simulator-ispb participant)
-                           "STR0018" (logic.str0018/queue-name simulator-ispb participant)
-                           "STR0019" (logic.str0019/queue-name simulator-ispb participant)
-                           "STR0030" (logic.str0030/queue-name simulator-ispb participant)
-                           "STR0042" (logic.str0042/queue-name simulator-ispb participant)
-                           "STR0050" (logic.str0050/queue-name simulator-ispb participant))]
+          handler        (get handlers msg-type)
+          xml            ((:build handler) params participant cfg)
+          queue          ((:queue handler) simulator-ispb participant)]
       (try
         (mq.producer/send-message! mq-cfg queue xml)
         (let [id      (str (UUID/randomUUID))
