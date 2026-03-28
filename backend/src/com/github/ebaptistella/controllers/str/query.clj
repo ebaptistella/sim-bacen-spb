@@ -10,7 +10,8 @@
             [com.github.ebaptistella.logic.str.str0001 :as logic.str0001]
             [com.github.ebaptistella.logic.str.str0012 :as logic.str0012]
             [com.github.ebaptistella.logic.str.str0013 :as logic.str0013]
-            [com.github.ebaptistella.logic.str.str0014 :as logic.str0014])
+            [com.github.ebaptistella.logic.str.str0014 :as logic.str0014]
+            [com.github.ebaptistella.logic.str.str0035 :as logic.str0035])
   (:import [java.time Instant]))
 
 ;; ---- helpers ---------------------------------------------------------------
@@ -82,6 +83,15 @@
     (mq.producer/send-message! mq-cfg queue r1-xml)
     (persist-and-respond! store msg r1-xml :STR0014R1)))
 
+;; ---- STR0035 handler -------------------------------------------------------
+
+(defn- handle-str0035! [msg {:keys [store logger mq-cfg]}]
+  (logger/log-call logger :info "[STR] STR0035 received | id=%s" (:message-id msg))
+  (let [r1-xml (logic.str0035/r1-response msg)
+        queue  (r1-queue msg)]
+    (mq.producer/send-message! mq-cfg queue r1-xml)
+    (persist-and-respond! store msg r1-xml :STR0035R1)))
+
 ;; ---- defmethods ------------------------------------------------------------
 
 (defmethod process! :STR0001
@@ -99,3 +109,7 @@
 (defmethod process! :STR0014
   [msg components]
   (handle-str0014! msg components))
+
+(defmethod process! :STR0035
+  [msg components]
+  (handle-str0035! msg components))

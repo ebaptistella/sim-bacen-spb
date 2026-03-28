@@ -42,6 +42,29 @@
                :value     (or (:hr-fechamento params) "")
                :on-change #(rf/dispatch [:outbound/set-param :hr-fechamento (.. % -target -value)])}]]]
 
+    "STR0018"
+    [:div.space-y-3
+     [:div
+      [:label.block.text-sm.font-medium.text-gray-700.mb-1 "ISPB do Participante Excluído"]
+      [:input {:type      "text"
+               :class     "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+               :max-length 8
+               :value     (or (:ispb-participante params) "")
+               :on-change #(rf/dispatch [:outbound/set-param :ispb-participante (.. % -target -value)])}]
+      [:p.text-xs.text-gray-500.mt-1 "8 dígitos — deixe vazio para usar o ISPB do simulador"]]]
+
+    "STR0019"
+    [:div.space-y-3
+     [:div
+      [:label.block.text-sm.font-medium.text-gray-700.mb-1 "ISPB do Participante Incluído/Alterado"]
+      [:input {:type      "text"
+               :class     "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+               :max-length 8
+               :value     (or (:ispb-participante params) "")
+               :on-change #(rf/dispatch [:outbound/set-param :ispb-participante (.. % -target -value)])}]
+      [:p.text-xs.text-gray-500.mt-1 "8 dígitos — deixe vazio para usar o ISPB do simulador"]]]
+
+    ;; STR0030, STR0042, STR0050 — sem parâmetros adicionais
     [:div]))
 
 (defn broadcast-form []
@@ -68,9 +91,17 @@
                     :value     (or msg-type "")
                     :on-change #(rf/dispatch [:outbound/set-type (.. % -target -value)])}
            [:option {:value ""} "Selecione..."]
-           [:option {:value "STR0015"} "STR0015 — Fechamento"]
-           [:option {:value "STR0016"} "STR0016 — Saldo"]
-           [:option {:value "STR0017"} "STR0017 — Abertura"]]]
+           [:optgroup {:label "Avisos de operação"}
+            [:option {:value "STR0015"} "STR0015 — Fechamento do STR"]
+            [:option {:value "STR0017"} "STR0017 — Abertura do STR"]
+            [:option {:value "STR0030"} "STR0030 — Aptidão para abertura"]
+            [:option {:value "STR0042"} "STR0042 — Início/fim de otimização"]]
+           [:optgroup {:label "Participantes"}
+            [:option {:value "STR0018"} "STR0018 — Exclusão de participante"]
+            [:option {:value "STR0019"} "STR0019 — Inclusão/Alteração de participante"]]
+           [:optgroup {:label "Saldo e encerramento"}
+            [:option {:value "STR0016"} "STR0016 — Saldo no fechamento"]
+            [:option {:value "STR0050"} "STR0050 — Encerramento do RDC"]]]]
          [:div
           [:label.block.text-sm.font-medium.text-gray-700.mb-1
            "ISPB Participante " [:span.text-red-500 "*"]]

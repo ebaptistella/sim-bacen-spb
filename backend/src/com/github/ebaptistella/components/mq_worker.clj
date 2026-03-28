@@ -21,6 +21,7 @@
             com.github.ebaptistella.wire.in.str.str0012
             com.github.ebaptistella.wire.in.str.str0013
             com.github.ebaptistella.wire.in.str.str0014
+            com.github.ebaptistella.wire.in.str.str0035
             [com.stuartsierra.component :as component]
             [schema.core :as s])
   (:import [java.util.concurrent Executors TimeUnit]))

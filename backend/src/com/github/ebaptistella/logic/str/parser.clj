@@ -98,6 +98,15 @@
    :hr-ini        (xml-value body "HrIni")
    :hr-fim        (xml-value body "HrFim")})
 
+(s/defn parse-str0035 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0035 (extrato de tarifação query) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if   (xml-value body "NumCtrlIF")
+   :ispb-if-debtd (xml-value body "ISPBIFDebtd")
+   :dt-ref        (xml-value body "DtRef")
+   :hr-ini        (xml-value body "HrIni")
+   :hr-fim        (xml-value body "HrFim")})
+
 (s/defn status->sit-lanc-str :- s/Str
   "Maps store status keywords to STR SitLancSTR codes."
   [status :- s/Keyword]
