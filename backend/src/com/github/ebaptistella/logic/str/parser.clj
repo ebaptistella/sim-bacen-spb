@@ -250,3 +250,134 @@
    :dt-movto       (xml-value body "DtMovto")
    :tp-ct-debtd    (xml-value body "TpCtDebtd")
    :tp-ct-credtd   (xml-value body "TpCtCredtd")})
+
+;; --- Iter 6: Repasses e transferências entre IFs (Fluxo2) ---
+
+(s/defn parse-str0020 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0020 (repasse de tributos estaduais) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0021 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0021 (repasse de FGTS) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0022 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0022 (repasse de FCVS) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0026 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0026 (liquidação de boleto) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0029 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0029 (repasse de demais arrecadações) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0033 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0033 (liquidação de FGTS) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0045 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0045 (repasse de tributos para IF centralizadora) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0046 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0046 (devolução de repasse de tributos) relevant fields from XML body.
+   Includes CodDevTransf and NumCtrlSTROr as this is a return transfer."
+  [body :- s/Str]
+  {:num-ctrl-if     (xml-value body "NumCtrlIF")
+   :num-ctrl-str-or (xml-value body "NumCtrlSTROr")
+   :ispb-if-debtd   (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd  (xml-value body "ISPBIFCredtd")
+   :vlr-lanc        (xml-value body "VlrLanc")
+   :finldd-if       (xml-value body "FinlddIF")
+   :cod-dev-transf  (xml-value body "CodDevTransf")
+   :dt-movto        (xml-value body "DtMovto")})
+
+(s/defn parse-str0003 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0003 (liquidação de transferência de numerário entre IFs) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0004 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0004 (transferência entre IFs por conta própria) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+(s/defn parse-str0040 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0040 (transferência para banco correspondente / convênio) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if    (xml-value body "NumCtrlIF")
+   :ispb-if-debtd  (xml-value body "ISPBIFDebtd")
+   :ispb-if-credtd (xml-value body "ISPBIFCredtd")
+   :vlr-lanc       (xml-value body "VlrLanc")
+   :finldd-if      (xml-value body "FinlddIF")
+   :dt-movto       (xml-value body "DtMovto")})
+
+;; --- Iter 6: Contingência Fluxo1 ---
+
+(s/defn parse-str0043 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0043 (agendamento de teste de contingência Internet) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if   (xml-value body "NumCtrlIF")
+   :ispb-if-debtd (xml-value body "ISPBIFDebtd")
+   :dt-movto      (xml-value body "DtMovto")})
+
+(s/defn parse-str0044 :- {s/Keyword (s/maybe s/Str)}
+  "Extracts STR0044 (cancelamento de teste de contingência Internet) relevant fields from XML body."
+  [body :- s/Str]
+  {:num-ctrl-if   (xml-value body "NumCtrlIF")
+   :ispb-if-debtd (xml-value body "ISPBIFDebtd")
+   :dt-movto      (xml-value body "DtMovto")})

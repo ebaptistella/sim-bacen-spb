@@ -325,3 +325,159 @@
     (let [m (parser/parse-str0052 "<STR0052><NumCtrlIF>X</NumCtrlIF></STR0052>")]
       (is (nil? (:tp-ct-debtd m)))
       (is (nil? (:tp-ct-credtd m))))))
+
+;; --- Iter 6: Repasses e transferências entre IFs ---
+
+(deftest parse-str0020-test
+  (testing "extracts FinlddIF and basic fields"
+    (let [xml (str "<STR0020>"
+                   "<NumCtrlIF>NC-020</NumCtrlIF>"
+                   "<ISPBIFDebtd>00000000</ISPBIFDebtd>"
+                   "<ISPBIFCredtd>11111111</ISPBIFCredtd>"
+                   "<VlrLanc>1000.00</VlrLanc>"
+                   "<FinlddIF>00020</FinlddIF>"
+                   "<DtMovto>20260327</DtMovto>"
+                   "</STR0020>")
+          m   (parser/parse-str0020 xml)]
+      (is (= "NC-020" (:num-ctrl-if m)))
+      (is (= "00000000" (:ispb-if-debtd m)))
+      (is (= "11111111" (:ispb-if-credtd m)))
+      (is (= "1000.00" (:vlr-lanc m)))
+      (is (= "00020" (:finldd-if m)))
+      (is (= "20260327" (:dt-movto m)))))
+  (testing "missing field returns nil"
+    (let [m (parser/parse-str0020 "<STR0020><NumCtrlIF>X</NumCtrlIF></STR0020>")]
+      (is (nil? (:finldd-if m)))
+      (is (nil? (:ispb-if-credtd m))))))
+
+(deftest parse-str0021-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0021 "<STR0021><NumCtrlIF>NC-021</NumCtrlIF><FinlddIF>00021</FinlddIF></STR0021>")]
+      (is (= "NC-021" (:num-ctrl-if m)))
+      (is (= "00021" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0021 "<STR0021><NumCtrlIF>X</NumCtrlIF></STR0021>"))))))
+
+(deftest parse-str0022-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0022 "<STR0022><NumCtrlIF>NC-022</NumCtrlIF><FinlddIF>00022</FinlddIF></STR0022>")]
+      (is (= "NC-022" (:num-ctrl-if m)))
+      (is (= "00022" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0022 "<STR0022><NumCtrlIF>X</NumCtrlIF></STR0022>"))))))
+
+(deftest parse-str0026-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0026 "<STR0026><NumCtrlIF>NC-026</NumCtrlIF><FinlddIF>00026</FinlddIF></STR0026>")]
+      (is (= "NC-026" (:num-ctrl-if m)))
+      (is (= "00026" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0026 "<STR0026><NumCtrlIF>X</NumCtrlIF></STR0026>"))))))
+
+(deftest parse-str0029-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0029 "<STR0029><NumCtrlIF>NC-029</NumCtrlIF><FinlddIF>00029</FinlddIF></STR0029>")]
+      (is (= "NC-029" (:num-ctrl-if m)))
+      (is (= "00029" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0029 "<STR0029><NumCtrlIF>X</NumCtrlIF></STR0029>"))))))
+
+(deftest parse-str0033-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0033 "<STR0033><NumCtrlIF>NC-033</NumCtrlIF><FinlddIF>00033</FinlddIF></STR0033>")]
+      (is (= "NC-033" (:num-ctrl-if m)))
+      (is (= "00033" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0033 "<STR0033><NumCtrlIF>X</NumCtrlIF></STR0033>"))))))
+
+(deftest parse-str0045-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0045 "<STR0045><NumCtrlIF>NC-045</NumCtrlIF><FinlddIF>00045</FinlddIF></STR0045>")]
+      (is (= "NC-045" (:num-ctrl-if m)))
+      (is (= "00045" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0045 "<STR0045><NumCtrlIF>X</NumCtrlIF></STR0045>"))))))
+
+(deftest parse-str0046-test
+  (testing "extracts CodDevTransf and NumCtrlSTROr"
+    (let [xml (str "<STR0046>"
+                   "<NumCtrlIF>NC-046</NumCtrlIF>"
+                   "<NumCtrlSTROr>NC-020</NumCtrlSTROr>"
+                   "<ISPBIFDebtd>00000000</ISPBIFDebtd>"
+                   "<ISPBIFCredtd>11111111</ISPBIFCredtd>"
+                   "<VlrLanc>500.00</VlrLanc>"
+                   "<FinlddIF>00046</FinlddIF>"
+                   "<CodDevTransf>MD01</CodDevTransf>"
+                   "<DtMovto>20260327</DtMovto>"
+                   "</STR0046>")
+          m   (parser/parse-str0046 xml)]
+      (is (= "NC-046" (:num-ctrl-if m)))
+      (is (= "NC-020" (:num-ctrl-str-or m)))
+      (is (= "00000000" (:ispb-if-debtd m)))
+      (is (= "11111111" (:ispb-if-credtd m)))
+      (is (= "500.00" (:vlr-lanc m)))
+      (is (= "00046" (:finldd-if m)))
+      (is (= "MD01" (:cod-dev-transf m)))
+      (is (= "20260327" (:dt-movto m)))))
+  (testing "missing CodDevTransf and NumCtrlSTROr return nil"
+    (let [m (parser/parse-str0046 "<STR0046><NumCtrlIF>X</NumCtrlIF></STR0046>")]
+      (is (nil? (:cod-dev-transf m)))
+      (is (nil? (:num-ctrl-str-or m))))))
+
+(deftest parse-str0003-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0003 "<STR0003><NumCtrlIF>NC-003</NumCtrlIF><FinlddIF>00003</FinlddIF></STR0003>")]
+      (is (= "NC-003" (:num-ctrl-if m)))
+      (is (= "00003" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0003 "<STR0003><NumCtrlIF>X</NumCtrlIF></STR0003>"))))))
+
+(deftest parse-str0004-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0004 "<STR0004><NumCtrlIF>NC-004</NumCtrlIF><FinlddIF>00004</FinlddIF></STR0004>")]
+      (is (= "NC-004" (:num-ctrl-if m)))
+      (is (= "00004" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0004 "<STR0004><NumCtrlIF>X</NumCtrlIF></STR0004>"))))))
+
+(deftest parse-str0040-test
+  (testing "extracts FinlddIF"
+    (let [m (parser/parse-str0040 "<STR0040><NumCtrlIF>NC-040</NumCtrlIF><FinlddIF>00040</FinlddIF></STR0040>")]
+      (is (= "NC-040" (:num-ctrl-if m)))
+      (is (= "00040" (:finldd-if m)))))
+  (testing "missing FinlddIF returns nil"
+    (is (nil? (:finldd-if (parser/parse-str0040 "<STR0040><NumCtrlIF>X</NumCtrlIF></STR0040>"))))))
+
+;; --- Iter 6: Contingência Fluxo1 ---
+
+(deftest parse-str0043-test
+  (testing "extracts NumCtrlIF, ISPBIFDebtd, DtMovto"
+    (let [xml (str "<STR0043>"
+                   "<NumCtrlIF>NC-043</NumCtrlIF>"
+                   "<ISPBIFDebtd>00000000</ISPBIFDebtd>"
+                   "<DtMovto>20260327</DtMovto>"
+                   "</STR0043>")
+          m   (parser/parse-str0043 xml)]
+      (is (= "NC-043" (:num-ctrl-if m)))
+      (is (= "00000000" (:ispb-if-debtd m)))
+      (is (= "20260327" (:dt-movto m)))))
+  (testing "missing field returns nil"
+    (let [m (parser/parse-str0043 "<STR0043><NumCtrlIF>X</NumCtrlIF></STR0043>")]
+      (is (nil? (:ispb-if-debtd m)))
+      (is (nil? (:dt-movto m))))))
+
+(deftest parse-str0044-test
+  (testing "extracts NumCtrlIF, ISPBIFDebtd, DtMovto"
+    (let [xml (str "<STR0044>"
+                   "<NumCtrlIF>NC-044</NumCtrlIF>"
+                   "<ISPBIFDebtd>00000000</ISPBIFDebtd>"
+                   "<DtMovto>20260327</DtMovto>"
+                   "</STR0044>")
+          m   (parser/parse-str0044 xml)]
+      (is (= "NC-044" (:num-ctrl-if m)))
+      (is (= "00000000" (:ispb-if-debtd m)))
+      (is (= "20260327" (:dt-movto m)))))
+  (testing "missing field returns nil"
+    (let [m (parser/parse-str0044 "<STR0044><NumCtrlIF>X</NumCtrlIF></STR0044>")]
+      (is (nil? (:ispb-if-debtd m)))
+      (is (nil? (:dt-movto m))))))
