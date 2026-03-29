@@ -1,5 +1,6 @@
 (ns com.github.ebaptistella.frontend.events.outbound-events
   (:require [cljs.core.async :refer [go <!]]
+            [clojure.string :as str]
             [com.github.ebaptistella.frontend.util.http :as http]
             [re-frame.core :as rf]))
 
@@ -64,12 +65,12 @@
  :outbound/do-submit
  (fn [{:keys [type participant params]}]
    (go
-     (let [is-slb?     (clojure.string/starts-with? type "SLB")
+     (let [is-slb?     (str/starts-with? type "SLB")
            body        (if is-slb?
                          {:ISPBPart participant}
                          {:type type :participant participant :params params})
            endpoint    (if is-slb?
-                         (str "/api/v1/slb/" (clojure.string/lower-case type))
+                         (str "/api/v1/slb/" (str/lower-case type))
                          "/api/v1/messages/outbound")
            result      (<! (http/post-json endpoint body))]
        (if (:ok? result)

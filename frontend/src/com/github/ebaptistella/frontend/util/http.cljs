@@ -73,3 +73,11 @@
     :headers {"Content-Type" "application/json"
               "Accept"       "application/json"}
     :body    (.stringify js/JSON (clj->js body))}))
+
+(defn post-json [url body]
+  (fetch-with-retry
+   url
+   {:method  "POST"
+    :headers {"Content-Type" "application/json"
+              "Accept"       "application/json"}
+    :body    (.stringify js/JSON (clj->js body))}))
