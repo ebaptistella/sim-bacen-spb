@@ -16,9 +16,9 @@
 (s/defn list-messages [request]
   (let [store  (components/get-component request :store)
         params (:query-params request)
-        limit  (or (some-> (get params "limit") Integer/parseInt) 20)
-        offset (or (some-> (get params "offset") Integer/parseInt) 0)
-        status (some-> (get params "status") keyword)
+        limit  (or (some-> (or (get params "limit") (get params :limit)) Integer/parseInt) 20)
+        offset (or (some-> (or (get params "offset") (get params :offset)) Integer/parseInt) 0)
+        status (some-> (or (get params "status") (get params :status)) keyword)
         result (store.messages/list-messages store {:limit limit :offset offset :status status})
         enriched (update result :messages #(mapv enrich-with-available-responses %))]
     (response/ok (wire.out.messages/->list-response enriched))))

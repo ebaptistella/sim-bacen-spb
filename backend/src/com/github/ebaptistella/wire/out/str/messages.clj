@@ -3,7 +3,7 @@
 
 (defn- ->message-response [msg]
   {:id                  (:id msg)
-   :type                (some-> (:type msg) str)
+   :type                (some-> (:type msg) name)
    :status              (some-> (:status msg) name)
    :direction           (some-> (:direction msg) name)
    :participant         (:participant msg)
