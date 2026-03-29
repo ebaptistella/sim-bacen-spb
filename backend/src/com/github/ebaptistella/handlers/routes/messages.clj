@@ -14,10 +14,6 @@
      :get
      http-server.messages/get-message
      :route-name :get-message]
-    ["/api/v1/test/inject-message"
-     :post
-     http-server.messages/test-inject-message
-     :route-name :test-inject-message]
     ["/api/v1/messages/outbound"
      :post
      http-server.messages/handle-outbound

@@ -120,35 +120,20 @@
         (response/bad-request "Tipo ou parâmetros inválidos"))
       (catch Exception e
         (response/internal-server-error (or (.getMessage e) "MQ or internal error"))))))
-
-(defn test-inject-message [request]
-  (if-not (= "true" (System/getenv "ENABLE_TEST_ENDPOINTS"))
-    (response/not-found "Not found")
-    (let [store (components/get-component request :store)
-        msg   {:id           (str (java.util.UUID/randomUUID))
-               :type         :STR0008
-               :status       :pending
-               :direction    :inbound
-               :participant  "00000000"
-               :queue-name   "QL.REQ.00000000.99999999.01"
-               :message-id   (str "MSG-" (rand-int 999999))
-               :num-ctrl-if  "CTL20260323-TEST"
-               :body         "<STR0008><CodMsg>STR0008</CodMsg><NumCtrlIF>CTL20260323-TEST</NumCtrlIF><ISPBIFDebtd>00000000</ISPBIFDebtd><ISPBIFCredtd>99999999</ISPBIFCredtd><VlrLanc>5000.00</VlrLanc><FinlddCli>0001</FinlddCli><DtMovto>20260323</DtMovto></STR0008>"
-               :received-at  (str (java.time.Instant/now))
-               :vlr-lanc     "5000.00"
-               :ispb-if-debtd "00000000"
-               :ispb-if-credtd "99999999"
-               :finldd-cli   "0001"
-               :dt-movto     "20260323"}]
-      (store.messages/save! store msg)
-      (response/ok {:data {:id (:id msg) :type "STR0008"}}))))
-
 ;; Ingest handlers for message injection
 
-(defn- ingest-message [msg-type request]
-  (let [config  (components/get-component request :config)
-        mq-cfg  (config.reader/mq-config config)
-        raw     (:json-params request)]
+(def ^:private ingest-message-types
+  [:STR0001 :STR0003 :STR0004 :STR0005 :STR0006 :STR0007 :STR0008 :STR0010
+   :STR0011 :STR0012 :STR0013 :STR0014 :STR0020 :STR0021 :STR0022 :STR0025
+   :STR0026 :STR0029 :STR0033 :STR0034 :STR0035 :STR0037 :STR0039 :STR0040
+   :STR0041 :STR0043 :STR0044 :STR0045 :STR0046 :STR0047 :STR0048 :STR0051
+   :STR0052])
+
+(defn- ingest-message [msg-type-kw request]
+  (let [msg-type (name msg-type-kw)
+        config   (components/get-component request :config)
+        mq-cfg   (config.reader/mq-config config)
+        raw      (:json-params request)]
     (try
       (let [schema  (wire.ingest/get-schema msg-type)]
         (if (nil? schema)
@@ -165,37 +150,46 @@
       (catch Exception e
         (response/internal-server-error (str "MQ or internal error: " (.getMessage e)))))))
 
-;; Message type ingest handlers
-(s/defn ingest-str0001 [request] (ingest-message "STR0001" request))
-(s/defn ingest-str0003 [request] (ingest-message "STR0003" request))
-(s/defn ingest-str0004 [request] (ingest-message "STR0004" request))
-(s/defn ingest-str0005 [request] (ingest-message "STR0005" request))
-(s/defn ingest-str0006 [request] (ingest-message "STR0006" request))
-(s/defn ingest-str0007 [request] (ingest-message "STR0007" request))
-(s/defn ingest-str0008 [request] (ingest-message "STR0008" request))
-(s/defn ingest-str0010 [request] (ingest-message "STR0010" request))
-(s/defn ingest-str0011 [request] (ingest-message "STR0011" request))
-(s/defn ingest-str0012 [request] (ingest-message "STR0012" request))
-(s/defn ingest-str0013 [request] (ingest-message "STR0013" request))
-(s/defn ingest-str0014 [request] (ingest-message "STR0014" request))
-(s/defn ingest-str0020 [request] (ingest-message "STR0020" request))
-(s/defn ingest-str0021 [request] (ingest-message "STR0021" request))
-(s/defn ingest-str0022 [request] (ingest-message "STR0022" request))
-(s/defn ingest-str0025 [request] (ingest-message "STR0025" request))
-(s/defn ingest-str0026 [request] (ingest-message "STR0026" request))
-(s/defn ingest-str0029 [request] (ingest-message "STR0029" request))
-(s/defn ingest-str0033 [request] (ingest-message "STR0033" request))
-(s/defn ingest-str0034 [request] (ingest-message "STR0034" request))
-(s/defn ingest-str0035 [request] (ingest-message "STR0035" request))
-(s/defn ingest-str0037 [request] (ingest-message "STR0037" request))
-(s/defn ingest-str0039 [request] (ingest-message "STR0039" request))
-(s/defn ingest-str0040 [request] (ingest-message "STR0040" request))
-(s/defn ingest-str0041 [request] (ingest-message "STR0041" request))
-(s/defn ingest-str0043 [request] (ingest-message "STR0043" request))
-(s/defn ingest-str0044 [request] (ingest-message "STR0044" request))
-(s/defn ingest-str0045 [request] (ingest-message "STR0045" request))
-(s/defn ingest-str0046 [request] (ingest-message "STR0046" request))
-(s/defn ingest-str0047 [request] (ingest-message "STR0047" request))
-(s/defn ingest-str0048 [request] (ingest-message "STR0048" request))
-(s/defn ingest-str0051 [request] (ingest-message "STR0051" request))
-(s/defn ingest-str0052 [request] (ingest-message "STR0052" request))
+;; Handler factory for all message types
+(defn- make-ingest-handler [msg-type-kw]
+  (fn [request] (ingest-message msg-type-kw request)))
+
+(def ingest-handlers
+  (into {} (map (fn [msg-type-kw]
+                  [msg-type-kw (make-ingest-handler msg-type-kw)])
+                ingest-message-types)))
+
+;; Expose individual handlers for routes
+(s/defn ingest-str0001 [request] (ingest-message :STR0001 request))
+(s/defn ingest-str0003 [request] (ingest-message :STR0003 request))
+(s/defn ingest-str0004 [request] (ingest-message :STR0004 request))
+(s/defn ingest-str0005 [request] (ingest-message :STR0005 request))
+(s/defn ingest-str0006 [request] (ingest-message :STR0006 request))
+(s/defn ingest-str0007 [request] (ingest-message :STR0007 request))
+(s/defn ingest-str0008 [request] (ingest-message :STR0008 request))
+(s/defn ingest-str0010 [request] (ingest-message :STR0010 request))
+(s/defn ingest-str0011 [request] (ingest-message :STR0011 request))
+(s/defn ingest-str0012 [request] (ingest-message :STR0012 request))
+(s/defn ingest-str0013 [request] (ingest-message :STR0013 request))
+(s/defn ingest-str0014 [request] (ingest-message :STR0014 request))
+(s/defn ingest-str0020 [request] (ingest-message :STR0020 request))
+(s/defn ingest-str0021 [request] (ingest-message :STR0021 request))
+(s/defn ingest-str0022 [request] (ingest-message :STR0022 request))
+(s/defn ingest-str0025 [request] (ingest-message :STR0025 request))
+(s/defn ingest-str0026 [request] (ingest-message :STR0026 request))
+(s/defn ingest-str0029 [request] (ingest-message :STR0029 request))
+(s/defn ingest-str0033 [request] (ingest-message :STR0033 request))
+(s/defn ingest-str0034 [request] (ingest-message :STR0034 request))
+(s/defn ingest-str0035 [request] (ingest-message :STR0035 request))
+(s/defn ingest-str0037 [request] (ingest-message :STR0037 request))
+(s/defn ingest-str0039 [request] (ingest-message :STR0039 request))
+(s/defn ingest-str0040 [request] (ingest-message :STR0040 request))
+(s/defn ingest-str0041 [request] (ingest-message :STR0041 request))
+(s/defn ingest-str0043 [request] (ingest-message :STR0043 request))
+(s/defn ingest-str0044 [request] (ingest-message :STR0044 request))
+(s/defn ingest-str0045 [request] (ingest-message :STR0045 request))
+(s/defn ingest-str0046 [request] (ingest-message :STR0046 request))
+(s/defn ingest-str0047 [request] (ingest-message :STR0047 request))
+(s/defn ingest-str0048 [request] (ingest-message :STR0048 request))
+(s/defn ingest-str0051 [request] (ingest-message :STR0051 request))
+(s/defn ingest-str0052 [request] (ingest-message :STR0052 request))
