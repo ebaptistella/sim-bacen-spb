@@ -1,9 +1,10 @@
 (ns com.github.ebaptistella.ui.components.slb-page
-  "SLB page with submenu structure (Débitos, Créditos, Consultar, Histórico)."
+  "SLB page with submenu structure (Débitos, Créditos, Consultar, Histórico, Broadcasts)."
   (:require [reagent.core :as r]
             [com.github.ebaptistella.ui.components.slb-form :as slb-form]
             [com.github.ebaptistella.ui.components.slb-forms-additional :as slb-forms-add]
-            [com.github.ebaptistella.ui.components.slb-history :as slb-history]))
+            [com.github.ebaptistella.ui.components.slb-history :as slb-history]
+            [com.github.ebaptistella.ui.components.slb-broadcasts :as slb-broadcasts]))
 
 (defonce page-state (r/atom {:current-submenu :debitos}))
 
@@ -21,11 +22,8 @@
 
 (defn slb-debitos []
   [:div
-   [:h3.text-lg.font-semibold.mb-4 "Debit Operations (SLB0001, SLB0002, SLB0007, SLB0008)"]
+   [:h3.text-lg.font-semibold.mb-4 "Debit Operations (SLB0002, SLB0007, SLB0008)"]
    [:div.space-y-8
-    [:div
-     [:h4.font-medium.mb-2 "SLB0001"]
-     [slb-form/slb0001-form]]
     [:div
      [:h4.font-medium.mb-2 "SLB0002"]
      [slb-forms-add/slb0002-form]]
@@ -53,6 +51,10 @@
    [:h3.text-lg.font-semibold.mb-4 "Message History"]
    [slb-history/history-list]])
 
+(defn slb-broadcasts-section []
+  [:div
+   [slb-broadcasts/slb-broadcasts]])
+
 (defn slb-page []
   [:div.p-6
    [:h2.text-2xl.font-bold.mb-6 "SLB Messages"]
@@ -62,7 +64,8 @@
     [submenu-button "Débitos" :debitos]
     [submenu-button "Créditos" :creditos]
     [submenu-button "Consultar" :consultar]
-    [submenu-button "Histórico" :historico]]
+    [submenu-button "Histórico" :historico]
+    [submenu-button "Broadcasts" :broadcasts]]
 
    ;; Content
    [:div.bg-white.rounded.p-6
@@ -71,4 +74,5 @@
       :creditos [slb-creditos]
       :consultar [slb-consultar]
       :historico [slb-historico]
+      :broadcasts [slb-broadcasts-section]
       [slb-debitos])]])
