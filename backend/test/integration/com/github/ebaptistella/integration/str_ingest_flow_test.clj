@@ -79,3 +79,11 @@
                                            :FinlddCli "10"
                                            :DtMovto "20260328"}))]
     (match? 400 (sf/invoke #(:status resp)))))
+
+(defflow ingest-unknown-endpoint-404
+  {:init flow-init}
+  (flow "POST /api/v1/str/str9999 unknown type — 404"
+    [base-url (sf/get-state :base-url)
+     resp     (sf/invoke #(http-post-json base-url "/api/v1/str/str9999"
+                                          {:NumCtrlIF "NC-001"}))]
+    (match? 404 (sf/invoke #(:status resp)))))

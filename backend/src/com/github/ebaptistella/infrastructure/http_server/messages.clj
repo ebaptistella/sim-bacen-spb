@@ -121,6 +121,16 @@
       (catch Exception e
         (response/internal-server-error (or (.getMessage e) "MQ or internal error"))))))
 ;; Ingest handlers for message injection
+;;
+;; Development-only HTTP endpoints for STR message testing.
+;; These endpoints allow developers to inject inbound messages via HTTP
+;; without requiring an MQ client setup, suitable for:
+;; - Local development and testing
+;; - Frontend integration testing
+;; - Message flow validation
+;;
+;; Messages are published directly to QL.REQ.00000000.99999999.01 and consumed
+;; by the normal MQ worker pipeline, ensuring realistic end-to-end testing.
 
 (def ^:private ingest-message-types
   [:STR0001 :STR0003 :STR0004 :STR0005 :STR0006 :STR0007 :STR0008 :STR0010
