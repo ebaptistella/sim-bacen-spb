@@ -2,6 +2,7 @@
   (:require [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.controllers.str.outbound :as controllers.outbound]
             [com.github.ebaptistella.controllers.str.str :as controllers.str]
+            [com.github.ebaptistella.controllers.slb.ingest :as controllers.slb.ingest]
             [com.github.ebaptistella.infrastructure.mq.producer :as mq.producer]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.interceptors.components :as components]
@@ -9,6 +10,7 @@
             [com.github.ebaptistella.logic.str.ingest :as logic.ingest]
             [com.github.ebaptistella.wire.in.messages :refer [OutboundBody RespondBody]]
             [com.github.ebaptistella.wire.in.str.ingest :as wire.ingest]
+            [com.github.ebaptistella.wire.in.slb.ingest :as wire.slb.ingest]
             [com.github.ebaptistella.wire.out.str.messages :as wire.out.messages]
             [schema.core :as s])
   (:import [clojure.lang ExceptionInfo]))
@@ -203,3 +205,48 @@
 (s/defn ingest-str0048 [request] (ingest-message :STR0048 request))
 (s/defn ingest-str0051 [request] (ingest-message :STR0051 request))
 (s/defn ingest-str0052 [request] (ingest-message :STR0052 request))
+
+;; SLB message ingestion handlers
+(s/defn ingest-slb-message [msg-type-str request]
+  (let [store   (components/get-component request :store)
+        config  (components/get-component request :config)
+        logger  (components/get-component request :logger)
+        mq-cfg  (config.reader/mq-config config)
+        raw     (:json-params request)]
+    (try
+      (let [schema (wire.slb.ingest/get-schema msg-type-str)]
+        (if (nil? schema)
+          (response/not-found (str "Message type not supported: " msg-type-str))
+          (let [params (-> (s/validate schema raw)
+                          (update-keys keyword))
+                result (controllers.slb.ingest/send-slb-message!
+                        msg-type-str params
+                        {:store store :mq-cfg mq-cfg :logger logger :config config})]
+            (if (:ok result)
+              (let [response-data {:message-type msg-type-str :status "injected"}]
+                (if (:num-ctrl-part result)
+                  (response/created {:data (assoc response-data :num-ctrl-part (:num-ctrl-part result))})
+                  (response/created {:data response-data})))
+              (cond
+                (= :unsupported-type (:error result))
+                (response/not-found (str "Unsupported message type: " msg-type-str))
+
+                (= :mq-or-store-error (:error result))
+                (response/internal-server-error (str "MQ or internal error: " (:message result)))
+
+                :else
+                (response/internal-server-error (str "Ingest failed: " (:error result))))))))
+      (catch ExceptionInfo e
+        (if (= :schema.core/error (:type (ex-data e)))
+          (response/bad-request (str "Invalid request body: " (ex-message e)))
+          (response/internal-server-error (str "Ingest failed: " (ex-message e)))))
+      (catch Exception e
+        (response/internal-server-error (str "MQ or internal error: " (.getMessage e)))))))
+
+(s/defn ingest-slb0001 [request] (ingest-slb-message "SLB0001" request))
+(s/defn ingest-slb0002 [request] (ingest-slb-message "SLB0002" request))
+(s/defn ingest-slb0003 [request] (ingest-slb-message "SLB0003" request))
+(s/defn ingest-slb0005 [request] (ingest-slb-message "SLB0005" request))
+(s/defn ingest-slb0006 [request] (ingest-slb-message "SLB0006" request))
+(s/defn ingest-slb0007 [request] (ingest-slb-message "SLB0007" request))
+(s/defn ingest-slb0008 [request] (ingest-slb-message "SLB0008" request))

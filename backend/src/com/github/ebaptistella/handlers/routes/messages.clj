@@ -151,4 +151,34 @@
     ["/api/v1/str/str0052"
      :post
      http-server.messages/ingest-str0052
-     :route-name :ingest-str0052]})
+     :route-name :ingest-str0052]
+
+    ;; 7 ingest endpoints for SLB messages
+    ["/api/v1/slb/slb0001"
+     :post
+     http-server.messages/ingest-slb0001
+     :route-name :ingest-slb0001]
+    ["/api/v1/slb/slb0002"
+     :post
+     http-server.messages/ingest-slb0002
+     :route-name :ingest-slb0002]
+    ["/api/v1/slb/slb0003"
+     :post
+     http-server.messages/ingest-slb0003
+     :route-name :ingest-slb0003]
+    ["/api/v1/slb/slb0005"
+     :post
+     http-server.messages/ingest-slb0005
+     :route-name :ingest-slb0005]
+    ["/api/v1/slb/slb0006"
+     :post
+     http-server.messages/ingest-slb0006
+     :route-name :ingest-slb0006]
+    ["/api/v1/slb/slb0007"
+     :post
+     http-server.messages/ingest-slb0007
+     :route-name :ingest-slb0007]
+    ["/api/v1/slb/slb0008"
+     :post
+     http-server.messages/ingest-slb0008
+     :route-name :ingest-slb0008]})

@@ -7,9 +7,11 @@
             [com.github.ebaptistella.ui.http-client :as http]
             [com.github.ebaptistella.ui.adapters :as adapters]
             [com.github.ebaptistella.ui.components.transaction-form :as transaction-form]
-            [com.github.ebaptistella.ui.components.transaction-history :as transaction-history]))
+            [com.github.ebaptistella.ui.components.transaction-history :as transaction-history]
+            [com.github.ebaptistella.ui.components.slb-page :as slb-page]))
 
 (defonce app-state (r/atom models/initial-state))
+(defonce page-state (r/atom {:current-page :transactions}))
 
 (def limit 20)
 
@@ -146,6 +148,14 @@
 
 ;; ---- App component ----
 
+(defn nav-button [label page]
+  [:button.px-6.py-2.mx-2.rounded.font-medium.transition
+   {:class (if (= page (:current-page @page-state))
+             "bg-indigo-600 text-white"
+             "bg-gray-200 text-gray-700 hover:bg-gray-300")
+    :on-click #(swap! page-state assoc :current-page page)}
+   label])
+
 (defn app
   []
   (let [state        @app-state
@@ -156,27 +166,38 @@
         txs          (models/transactions state)
         tx-loading?  (models/transactions-loading? state)
         tx-error     (models/transactions-error state)
-        tx-has-more  (models/transactions-has-more? state)]
+        tx-has-more  (models/transactions-has-more? state)
+        current-page (:current-page @page-state)]
     [:div.max-w-6xl.mx-auto.bg-white.rounded-xl.shadow-2xl.overflow-hidden
      [:header.bg-gradient-to-r.from-indigo-500.to-purple-600.text-white.p-8.text-center
       [:h1.text-4xl.md:text-5xl.mb-2.5 "Simulador BACEN"]
       [:p.text-lg.opacity-90 "Sistema de Pagamentos Brasileiro"]]
+
+     ;; Navigation
+     [:nav.bg-gray-100.p-4.flex.justify-center.border-b
+      [nav-button "STR Messages" :transactions]
+      [nav-button "SLB Messages" :slb]]
+
+     ;; Content
      [:main.p-8
-      [transaction-form/transaction-form
-       {:form-data      form-data
-        :on-form-change handle-form-change
-        :loading?       loading?
-        :message        message
-        :message-type   message-type
-        :on-submit      submit-transaction!
-        :on-reset       reset-form!}]
-      [transaction-history/transaction-history
-       {:error        tx-error
-        :loading?     tx-loading?
-        :transactions txs
-        :has-more?    tx-has-more
-        :on-retry     #(fetch-transactions! false)
-        :on-load-more handle-load-more}]]]))
+      (if (= current-page :slb)
+        [slb-page/slb-page]
+        [:div
+         [transaction-form/transaction-form
+          {:form-data      form-data
+           :on-form-change handle-form-change
+           :loading?       loading?
+           :message        message
+           :message-type   message-type
+           :on-submit      submit-transaction!
+           :on-reset       reset-form!}]
+         [transaction-history/transaction-history
+          {:error        tx-error
+           :loading?     tx-loading?
+           :transactions txs
+           :has-more?    tx-has-more
+           :on-retry     #(fetch-transactions! false)
+           :on-load-more handle-load-more}]])]]))
 
 (defn mount-root
   []

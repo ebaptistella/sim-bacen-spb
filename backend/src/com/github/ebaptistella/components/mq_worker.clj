@@ -4,6 +4,7 @@
   (:require [com.github.ebaptistella.components.logger :as logger]
             [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.controllers.str.str :as controllers.str]
+            [com.github.ebaptistella.controllers.slb.response :as controllers.slb.response]
             com.github.ebaptistella.controllers.str.str0005
             com.github.ebaptistella.controllers.str.str0006
             com.github.ebaptistella.controllers.str.str0007
@@ -11,6 +12,7 @@
             com.github.ebaptistella.controllers.str.str0011
             com.github.ebaptistella.controllers.str.query
             [com.github.ebaptistella.infrastructure.mq.consumer :as mq.consumer]
+            [com.github.ebaptistella.wire.in.unified-parser :as unified-parser]
             [com.github.ebaptistella.wire.in.str.str :as wire.in.str]
             com.github.ebaptistella.wire.in.str.str0005
             com.github.ebaptistella.wire.in.str.str0006
@@ -38,11 +40,19 @@
             (.submit exec ^Runnable
                      (fn []
                        (try
-                         (when-let [parsed (wire.in.str/parse-inbound raw)]
-                           (controllers.str/process! parsed {:store  store
-                                                             :logger log
-                                                             :mq-cfg mq-cfg
-                                                             :config config}))
+                         (when-let [parsed (unified-parser/parse-inbound raw)]
+                           (let [msg-type (:type parsed)]
+                             (cond
+                               (or (= msg-type "SLB0002R1")
+                                   (= msg-type "SLB0006R1")
+                                   (= msg-type "SLB0007R1"))
+                               (controllers.slb.response/process-slb-response! parsed {:store store :logger log})
+
+                               :else
+                               (controllers.str/process! parsed {:store  store
+                                                                 :logger log
+                                                                 :mq-cfg mq-cfg
+                                                                 :config config}))))
                          (catch Exception e
                            (logger/log-call log :warn
                                             "[MQWorker] Failed to process message id=%s: %s"
