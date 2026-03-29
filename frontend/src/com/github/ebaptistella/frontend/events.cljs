@@ -5,6 +5,7 @@
             [com.github.ebaptistella.frontend.events.respond-events]
             [com.github.ebaptistella.frontend.events.router-events]
             [com.github.ebaptistella.frontend.events.slb-form-events]
+            [com.github.ebaptistella.frontend.events.slb-response-events]
             [com.github.ebaptistella.frontend.events.toast-events]
             [re-frame.core :as rf]))
 

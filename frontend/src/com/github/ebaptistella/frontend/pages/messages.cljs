@@ -5,6 +5,7 @@
             [com.github.ebaptistella.frontend.components.message-list :as list]
             [com.github.ebaptistella.frontend.components.respond-modal :as respond]
             [com.github.ebaptistella.frontend.components.slb-form :as slb-form]
+            [com.github.ebaptistella.frontend.components.slb-response-modal :as slb-response]
             [com.github.ebaptistella.frontend.components.toast-notification :as toast]
             [re-frame.core :as rf]
             [reagent.core :as r]))
@@ -48,4 +49,5 @@
          [respond/respond-modal]
          [broadcast/broadcast-form]
          [slb-form/slb-form]
+         [slb-response/slb-response-modal]
          [confirmation/confirmation-modal]]))}))

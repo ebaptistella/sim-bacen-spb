@@ -1,5 +1,6 @@
 (ns com.github.ebaptistella.frontend.components.message-detail-panel
-  (:require [com.github.ebaptistella.frontend.util.format :as fmt]
+  (:require [clojure.string]
+            [com.github.ebaptistella.frontend.util.format :as fmt]
             [re-frame.core :as rf]))
 
 (defn- field-row [label value]
@@ -8,14 +9,16 @@
    [:dd.col-span-2.text-sm.text-gray-900.font-mono (or value "—")]])
 
 (defn message-detail-panel []
-  (let [msg @(rf/subscribe [:messages/selected-message])]
+  (let [msg @(rf/subscribe [:messages/selected-message])
+        slb-response @(rf/subscribe [:slb-messages/response-for-selected])]
     (when msg
       (let [pending?        (= (:status msg) "pending")
             responded?      (= (:status msg) "responded")
             auto-responded? (= (:status msg) "auto-responded")
             outbound?       (= (:direction msg) "outbound")
             responses       (:responses msg)
-            first-resp      (first responses)]
+            first-resp      (first responses)
+            is-slb?         (clojure.string/starts-with? (:type msg) "SLB")]
         [:div {:class "bg-white border-l border-gray-200 overflow-y-auto
                         fixed inset-0 z-40 sm:static sm:z-auto sm:inset-auto"}
          [:div.flex.items-center.justify-between.p-4.border-b.border-gray-200.bg-gray-50
@@ -64,6 +67,15 @@
               [:p.text-sm.text-blue-800
                "Auto-respondida em " [:span.font-medium (fmt/format-date (:sent-at first-resp))]
                " — tipo: " [:span.font-mono.font-medium (:type first-resp)]]])
+           (when (and is-slb? slb-response)
+             [:div.mt-4.p-3.bg-emerald-50.rounded-lg.border.border-emerald-200
+              [:p.text-sm.font-medium.text-emerald-800.mb-2 "✓ Resposta Recebida"]
+              [:p.text-xs.text-emerald-700.mb-3
+               "Tipo: " [:span.font-mono (:type slb-response)] " — "
+               "Recebida em " (fmt/format-date (:received-at slb-response))]
+              [:button {:class    "w-full px-3 py-2 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 transition-colors font-medium"
+                        :on-click #(rf/dispatch [:slb-response/show-response slb-response])}
+               "Visualizar Resposta"]])
            [:div.mt-6
             (if (seq (:available-responses msg))
               [:button {:class    "w-full bg-indigo-600 text-white py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
