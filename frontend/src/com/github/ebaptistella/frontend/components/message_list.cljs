@@ -1,8 +1,9 @@
 (ns com.github.ebaptistella.frontend.components.message-list
-  (:require [com.github.ebaptistella.frontend.util.format :as fmt]
+  (:require [clojure.string :as str]
+            [com.github.ebaptistella.frontend.util.format :as fmt]
             [re-frame.core :as rf]))
 
-(defn- status-badge [status direction]
+(defn- status-badge [status direction msg-type]
   (cond
     (= direction "outbound")
     [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-purple-100.text-purple-800
@@ -11,6 +12,10 @@
     (= status "auto-responded")
     [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-blue-100.text-blue-800
      "Auto"]
+
+    (and (str/starts-with? msg-type "SLB") (= status "pending"))
+    [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-yellow-100.text-yellow-800
+     "Aguardando"]
 
     (= status "pending")
     [:span.inline-flex.items-center.px-2.5.py-0.5.rounded-full.text-xs.font-medium.bg-yellow-100.text-yellow-800
@@ -30,7 +35,7 @@
      [:td.px-4.py-3.text-sm.font-mono.text-indigo-600 (:type msg)]
      [:td.px-4.py-3.text-sm.font-mono (:participant msg)]
      [:td.px-4.py-3.text-sm.text-right.font-mono (fmt/format-currency (:vlr-lanc msg))]
-     [:td.px-4.py-3.text-sm [status-badge (name (:status msg)) (:direction msg)]]
+     [:td.px-4.py-3.text-sm [status-badge (name (:status msg)) (:direction msg) (:type msg)]]
      [:td.px-4.py-3.text-sm.text-gray-500 (fmt/format-date (:received-at msg))]
      [:td.px-4.py-3.text-sm.font-mono.text-gray-600 (:num-ctrl-if msg)]
      [:td.px-4.py-3.text-sm.text-gray-500 (:finldd-cli msg)]]))
@@ -42,7 +47,7 @@
            :on-click #(rf/dispatch [:messages/select-message (:id msg)])}
      [:div.flex.items-center.justify-between.mb-2
       [:span.font-mono.text-indigo-600.font-medium (:type msg)]
-      [status-badge (name (:status msg)) (:direction msg)]]
+      [status-badge (name (:status msg)) (:direction msg) (:type msg)]]
      [:div.grid.grid-cols-2.gap-1.text-sm
       [:span.text-gray-500 "Participante:"]
       [:span.font-mono (:participant msg)]
@@ -66,12 +71,21 @@
    [:p.text-gray-400.text-lg "Nenhuma mensagem recebida."]])
 
 (defn message-list []
-  (let [messages    @(rf/subscribe [:messages/list])
-        loading?    @(rf/subscribe [:messages/loading?])
-        offline?    @(rf/subscribe [:messages/offline?])
-        selected-id @(rf/subscribe [:messages/selected-id])]
+  (let [messages      @(rf/subscribe [:messages/filtered-list])
+        filter-type   @(rf/subscribe [:message-filter/type])
+        loading?      @(rf/subscribe [:messages/loading?])
+        offline?      @(rf/subscribe [:messages/offline?])
+        selected-id   @(rf/subscribe [:messages/selected-id])]
     [:div
      (when offline? [offline-banner])
+     [:div.px-4.py-3.bg-gray-50.border-b.border-gray-200.flex.items-center.gap-3
+      [:label.text-sm.font-medium.text-gray-700 "Filtrar por:"]
+      [:select.px-3.py-1.border.border-gray-300.rounded-lg.text-sm.text-gray-700
+       {:value filter-type
+        :on-change #(rf/dispatch [:message-filter/set-type (.. % -target -value)])}
+       [:option {:value "all"} "Todas as mensagens"]
+       [:option {:value "str"} "Apenas STR"]
+       [:option {:value "slb"} "Apenas SLB"]]]
      (when loading? [spinner])
      (if (empty? messages)
        [empty-state]
