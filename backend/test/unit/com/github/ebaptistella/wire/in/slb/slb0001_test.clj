@@ -21,13 +21,9 @@
            :FIndddSLB "05"
            :Hist "Payment notification"})))
 
-  (testing "Invalid: Missing required field NumCtrlSLB"
-    (is (thrown? Exception
-          (s/validate SLB0001Request
-            {:ISPBPart "12345678"
-             :DtVenc "20260328"
-             :VlrLanc 1000.50
-             :FIndddSLB "05"}))))
+  (testing "Valid: Only ISPBPart (other fields optional for broadcasts)"
+    (is (s/validate SLB0001Request
+          {:ISPBPart "12345678"})))
 
   (testing "Invalid: Invalid ISPB format"
     (is (thrown? Exception
