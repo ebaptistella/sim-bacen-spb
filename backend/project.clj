@@ -15,6 +15,7 @@
                  [io.pedestal/pedestal.jetty "0.5.8"]
                  [prismatic/schema "1.4.1"]
                  [cheshire "5.11.0"]
+                 [org.clojure/data.xml "0.2.0-alpha9"]
                  ;; IBM MQ client
                  [com.ibm.mq/com.ibm.mq.allclient "9.4.0.0"]]
   :plugins [[com.github.clj-kondo/lein-clj-kondo "0.2.5"]
