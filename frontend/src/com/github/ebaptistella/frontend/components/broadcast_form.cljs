@@ -64,7 +64,15 @@
                :on-change #(rf/dispatch [:outbound/set-param :ispb-participante (.. % -target -value)])}]
       [:p.text-xs.text-gray-500.mt-1 "8 dígitos — deixe vazio para usar o ISPB do simulador"]]]
 
-    ;; STR0030, STR0042, STR0050 — sem parâmetros adicionais
+    "SLB0001"
+    [:div.space-y-3
+     [:p.text-xs.text-gray-600 "Notificação de mudança de situação SLB — sem parâmetros adicionais"]]
+
+    "SLB0003"
+    [:div.space-y-3
+     [:p.text-xs.text-gray-600 "Extrato de posição SLB — sem parâmetros adicionais"]]
+
+    ;; STR0030, STR0042, STR0050, SLB0001, SLB0003 — sem parâmetros adicionais
     [:div]))
 
 (defn broadcast-form []
@@ -101,7 +109,10 @@
             [:option {:value "STR0019"} "STR0019 — Inclusão/Alteração de participante"]]
            [:optgroup {:label "Saldo e encerramento"}
             [:option {:value "STR0016"} "STR0016 — Saldo no fechamento"]
-            [:option {:value "STR0050"} "STR0050 — Encerramento do RDC"]]]]
+            [:option {:value "STR0050"} "STR0050 — Encerramento do RDC"]]
+           [:optgroup {:label "SLB (Débitos)"}
+            [:option {:value "SLB0001"} "SLB0001 — Notificação de Situação"]
+            [:option {:value "SLB0003"} "SLB0003 — Extrato de Posição"]]]]
          [:div
           [:label.block.text-sm.font-medium.text-gray-700.mb-1
            "ISPB Participante " [:span.text-red-500 "*"]]
