@@ -64,8 +64,14 @@
  :outbound/do-submit
  (fn [{:keys [type participant params]}]
    (go
-     (let [body   {:type type :participant participant :params params}
-           result (<! (http/post-outbound body))]
+     (let [is-slb?     (clojure.string/starts-with? type "SLB")
+           body        (if is-slb?
+                         {:ISPBPart participant}
+                         {:type type :participant participant :params params})
+           endpoint    (if is-slb?
+                         (str "/api/v1/slb/" (clojure.string/lower-case type))
+                         "/api/v1/messages/outbound")
+           result      (<! (http/post-json endpoint body))]
        (if (:ok? result)
          (do
            (rf/dispatch [:outbound/submit-success])
