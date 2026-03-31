@@ -3,24 +3,25 @@ services:
   # ---------------------------------------------------------------------------
   # IBM MQ — broker de mensagens SPB
   # ---------------------------------------------------------------------------
-#  ibmmq:
-#    image: icr.io/ibm-messaging/mq:latest
-#    platform: linux/amd64
-#    container_name: ibmmq
-#    restart: unless-stopped
-#    environment:
-#      LICENSE: accept
-#      MQ_QMGR_NAME: ${IBMMQ_QMGR_NAME}
-#      MQ_APP_PASSWORD: ${IBMMQ_APP_PASSWORD}
-#      MQ_ADMIN_PASSWORD: ${IBMMQ_ADMIN_PASSWORD}
-#    ports:
-#      - "1414:1414"   # MQ listener
-#      - "9443:9443"   # Web admin console
-#    volumes:
-#      - ibmmq-data:/mnt/mqm
-#      - ./ibmmq/20-spb-queues.mqsc:/etc/mqm/20-spb-queues.mqsc
-#    networks:
-#      - spb-net
+  ibmmq:
+    image: icr.io/ibm-messaging/mq:latest
+    platform: linux/amd64
+    container_name: ibmmq
+    restart: unless-stopped
+    environment:
+      LICENSE: accept
+      MQ_QMGR_NAME: ${IBMMQ_QMGR_NAME}
+      MQ_APP_PASSWORD: ${IBMMQ_APP_PASSWORD}
+      MQ_ADMIN_PASSWORD: ${IBMMQ_ADMIN_PASSWORD}
+    ports:
+      - "1414:1414"   # MQ listener
+      - "9443:9443"   # Web admin console
+    volumes:
+      - ibmmq-data:/mnt/mqm
+      - ./ibmmq/20-spb-queues.mqsc:/etc/mqm/20-spb-queues.mqsc
+    networks:
+      - spb-net
+      - spb-network
 
   # ---------------------------------------------------------------------------
   # Backend — API Clojure/Pedestal
@@ -46,11 +47,12 @@ services:
       IBMMQ_QL_REP_NAME: ${IBMMQ_QL_REP_NAME:-QL.REP.00038166.08253539.01}
     ports:
       - "3000:3000"
-#    depends_on:
-#      ibmmq:
-#        condition: service_started
+    depends_on:
+      ibmmq:
+        condition: service_started
     networks:
       - spb-net
+      - spb-network
 
   # ---------------------------------------------------------------------------
   # Frontend — SPA ClojureScript/Reagent servida via nginx
@@ -73,10 +75,14 @@ services:
       - backend
     networks:
       - spb-net
+      - spb-network
 
 networks:
   spb-net:
     driver: bridge
+  spb-network:
+    name: spb-network
+    external: true
 
 volumes:
   ibmmq-data:

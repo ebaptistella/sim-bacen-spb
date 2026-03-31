@@ -3,7 +3,7 @@
             [com.github.ebaptistella.infrastructure.mq.consumer :as consumer]))
 
 (deftest receive-messages-accepts-queue-name-parameter
-  (testing "receive-messages signature accepts mq-cfg, queue-name, and limit"
+  (testing "receive-messages signature accepts mq-cfg, queue-name, limit, and bound logger"
     ;; This test verifies the function signature includes queue-name as injected parameter
     ;; In production, this is resolved from IBMMQ_QL_REQ_NAME at component startup
     ;; and passed to the consumer by the MQ worker
@@ -12,7 +12,7 @@
           limit 10]
       ;; Verify function is callable with these parameters (actual MQ connection will fail in test)
       (is (fn? consumer/receive-messages))
-      (is (= 3 (count (-> (var consumer/receive-messages) meta :arglists first)))))))
+      (is (= 4 (count (-> (var consumer/receive-messages) meta :arglists first)))))))
 
 (deftest receive-messages-queue-name-is-used-not-hardcoded
   (testing "consumer uses provided queue-name parameter, not hardcoded queue"

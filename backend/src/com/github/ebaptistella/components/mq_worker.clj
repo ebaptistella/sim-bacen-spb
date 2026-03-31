@@ -33,7 +33,7 @@
     (try
       (Thread/sleep (long poll-ms))
       (when @run?
-        (let [messages (mq.consumer/receive-messages mq-cfg request-queue-name limit)]
+        (let [messages (mq.consumer/receive-messages mq-cfg request-queue-name limit log)]
           (when (seq messages)
             (logger/log-call log :info "[MQWorker] Received %d message(s)" (count messages)))
           (doseq [raw messages]
