@@ -21,10 +21,16 @@
     gmo))
 
 (s/defn receive-messages
-  "Reads up to `limit` messages from the inbound queue (QL.REQ.*).
-   Returns a sequence of maps with :queue-name, :message-id, :body."
-  [mq-cfg limit]
-  (let [queue-name (System/getenv "IBMMQ_QL_REQ_NAME")
+  "Reads up to `limit` messages from the configured request queue.
+   Accepts request-queue-name as parameter (resolved from env var at startup).
+   Returns a sequence of maps with :queue-name, :message-id, :body.
+
+   Queue separation: consumer is hardcoded to read only from the request queue
+   (IBMMQ_QL_REQ_NAME), ensuring requests from the IF are processed by the
+   normal message pipeline. Response/autonomous messages are published to
+   a separate response queue (IBMMQ_QL_RSP_NAME) and not consumed here."
+  [mq-cfg request-queue-name limit]
+  (let [queue-name request-queue-name
         qmgr       (build-queue-manager mq-cfg)
         open-opts  (bit-or CMQC/MQOO_INPUT_AS_Q_DEF CMQC/MQOO_FAIL_IF_QUIESCING)
         queue      (.accessQueue qmgr queue-name open-opts)

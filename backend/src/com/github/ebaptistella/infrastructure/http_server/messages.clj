@@ -1,5 +1,6 @@
 (ns com.github.ebaptistella.infrastructure.http-server.messages
-  (:require [com.github.ebaptistella.config.reader :as config.reader]
+  (:require [com.github.ebaptistella.components.logger :as logger]
+            [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.controllers.str.outbound :as controllers.outbound]
             [com.github.ebaptistella.controllers.str.str :as controllers.str]
             [com.github.ebaptistella.controllers.slb.ingest :as controllers.slb.ingest]
@@ -145,6 +146,7 @@
   (let [msg-type (name msg-type-kw)
         config   (components/get-component request :config)
         mq-cfg   (config.reader/mq-config config)
+        request-queue (config.reader/mq-request-queue-name config)
         raw      (:json-params request)]
     (try
       (let [schema  (wire.ingest/get-schema msg-type)]
@@ -153,7 +155,7 @@
           (let [params (-> (s/validate schema raw)
                            (update-keys keyword))
                 xml    (logic.ingest/build-xml-for-type msg-type params)]
-            (mq.producer/send-message! mq-cfg "QL.REQ.00000000.99999999.01" xml)
+            (mq.producer/send-message! mq-cfg request-queue xml)
             (response/created {:data {:message-type msg-type :status "injected"}}))))
       (catch ExceptionInfo e
         (if (= :schema.core/error (:type (ex-data e)))
@@ -212,6 +214,7 @@
         config  (components/get-component request :config)
         logger  (components/get-component request :logger)
         mq-cfg  (config.reader/mq-config config)
+        response-queue (config.reader/mq-response-queue-name config)
         raw     (:json-params request)]
     (try
       (let [schema (wire.slb.ingest/get-schema msg-type-str)]
@@ -224,6 +227,9 @@
                         {:store store :mq-cfg mq-cfg :logger logger :config config})]
             (if (:ok result)
               (let [response-data {:message-type msg-type-str :status "injected"}]
+                (when logger
+                  (logger/log-call logger :info "[HTTP-Ingest] SLB%s sent to response queue: %s | id=%s"
+                                  msg-type-str response-queue (:id result)))
                 (if (:num-ctrl-part result)
                   (response/created {:data (assoc response-data :num-ctrl-part (:num-ctrl-part result))})
                   (response/created {:data response-data})))

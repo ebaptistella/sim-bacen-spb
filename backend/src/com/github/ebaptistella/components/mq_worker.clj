@@ -28,12 +28,12 @@
             [schema.core :as s])
   (:import [java.util.concurrent Executors TimeUnit]))
 
-(defn- run-worker-loop [run? poll-ms limit mq-cfg store config log exec]
+(defn- run-worker-loop [run? poll-ms limit mq-cfg request-queue-name store config log exec]
   (while @run?
     (try
       (Thread/sleep (long poll-ms))
       (when @run?
-        (let [messages (mq.consumer/receive-messages mq-cfg limit)]
+        (let [messages (mq.consumer/receive-messages mq-cfg request-queue-name limit)]
           (when (seq messages)
             (logger/log-call log :info "[MQWorker] Received %d message(s)" (count messages)))
           (doseq [raw messages]
@@ -67,22 +67,29 @@
   (start [this]
     (if thread
       this
-      (let [log        (logger/bound logger)
-            worker-cfg (config.reader/mq-worker-config config)
-            mq-cfg     (config.reader/mq-config config)
-            poll-ms    (or poll-interval-ms (:poll-interval-ms worker-cfg))
-            pool-size  (or thread-pool-size (:thread-pool-size worker-cfg))
-            limit      (or batch-limit (:batch-limit worker-cfg))
-            exec       (Executors/newFixedThreadPool (int pool-size))
-            run?       (atom true)
-            t          (doto (Thread. ^Runnable (fn [] (run-worker-loop run? poll-ms limit mq-cfg store config log exec)))
-                         (.setName "mq-worker")
-                         (.setDaemon true)
-                         (.start))]
-        (logger/log-call log :info "[MQWorker] Started | poll-ms=%d thread-pool-size=%d batch-limit=%d"
-                         poll-ms pool-size limit)
-        (assoc this :executor exec :thread t :running? run?
-               :poll-interval-ms poll-ms :thread-pool-size pool-size :batch-limit limit))))
+      (let [log              (logger/bound logger)
+            worker-cfg       (config.reader/mq-worker-config config)
+            mq-cfg           (config.reader/mq-config config)
+            request-queue    (config.reader/mq-request-queue-name config)
+            poll-ms          (or poll-interval-ms (:poll-interval-ms worker-cfg))
+            pool-size        (or thread-pool-size (:thread-pool-size worker-cfg))
+            limit            (or batch-limit (:batch-limit worker-cfg))
+            exec             (Executors/newFixedThreadPool (int pool-size))
+            run?             (atom true)
+            t                (doto (Thread. ^Runnable (fn [] (run-worker-loop run? poll-ms limit mq-cfg request-queue store config log exec)))
+                               (.setName "mq-worker")
+                               (.setDaemon true)
+                               (.start))]
+        (if request-queue
+          (do
+            (logger/log-call log :info "[MQWorker] Started | request-queue=%s poll-ms=%d thread-pool-size=%d batch-limit=%d"
+                             request-queue poll-ms pool-size limit)
+            (assoc this :executor exec :thread t :running? run?
+                   :poll-interval-ms poll-ms :thread-pool-size pool-size :batch-limit limit))
+          (do
+            (logger/log-call log :warn "[MQWorker] IBMMQ_QL_REQ_NAME env var not set - request queue will be nil")
+            (assoc this :executor exec :thread t :running? run?
+                   :poll-interval-ms poll-ms :thread-pool-size pool-size :batch-limit limit))))))
 
   (stop [this]
     (when logger

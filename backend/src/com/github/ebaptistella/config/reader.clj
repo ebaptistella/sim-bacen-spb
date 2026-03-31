@@ -77,3 +77,24 @@
   (or (System/getenv "STR_SALDO_SIMULADO")
       (get-in (get-config config-component) [:str :saldo-simulado])
       "99999999.99"))
+
+(s/defn ^:private resolve-queue-name
+  "Helper function to safely read queue name from environment variable.
+   Returns the env var value if set, otherwise nil.
+   Logging should be done at call site."
+  [env-var-name]
+  (System/getenv env-var-name))
+
+(s/defn mq-request-queue-name
+  "Returns the IBM MQ request queue name (inbound from IF).
+   Resolved from IBMMQ_QL_REQ_NAME environment variable at startup.
+   If not set, returns nil and caller should log a warning."
+  [config-component]
+  (resolve-queue-name "IBMMQ_QL_REQ_NAME"))
+
+(s/defn mq-response-queue-name
+  "Returns the IBM MQ response queue name (outbound to BACEN).
+   Resolved from IBMMQ_QL_RSP_NAME environment variable at startup.
+   If not set, returns nil and caller should log a warning."
+  [config-component]
+  (resolve-queue-name "IBMMQ_QL_RSP_NAME"))

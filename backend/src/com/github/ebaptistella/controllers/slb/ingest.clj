@@ -1,6 +1,7 @@
 (ns com.github.ebaptistella.controllers.slb.ingest
   "SLB message ingestion controller (HTTP → MQ + Store)."
   (:require [com.github.ebaptistella.components.logger :as logger]
+            [com.github.ebaptistella.config.reader :as config.reader]
             [com.github.ebaptistella.infrastructure.mq.producer :as mq.producer]
             [com.github.ebaptistella.infrastructure.store.messages :as store.messages]
             [com.github.ebaptistella.logic.slb.builder :as builder]
@@ -30,7 +31,7 @@
                                 data))
 
               xml (builder-fn enriched-data)
-              queue-name "QL.REQ.00000000.99999999.01"
+              queue-name (config.reader/mq-response-queue-name config)
               msg-id (str (UUID/randomUUID))
               now (str (Instant/now))
 
